@@ -39,7 +39,7 @@ spec:
               protocol: TCP
           volumeMounts:
             - mountPath: {{ pluck .Values.global.env .Values.app.encryption.rsa.dir | first | default .Values.app.encryption.rsa.dir._default | quote }}
-              name: bc-wallet-eth-hdwallet-rsa-key
+              name: bc-wallet-ethereum-hdwallet-rsa-key
               readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -62,10 +62,10 @@ spec:
       {{- end }}
 
       volumes:
-        - name: bc-wallet-eth-hdwallet-rsa-key
+        - name: bc-wallet-ethereum-hdwallet-rsa-key
           secret:
-            secretName: bc-wallet-eth-hdwallet
+            secretName: bc-wallet-ethereum-hdwallet
             items:
-              - key: bc-wallet-eth-hdwallet-rsa-key
+              - key: bc-wallet-ethereum-hdwallet-rsa-key
                 path: {{ pluck .Values.global.env .Values.app.encryption.rsa.file | first | default .Values.app.encryption.rsa.file._default | quote }}
             optional: false

@@ -1,12 +1,12 @@
 replicaCount: 1
 
 image:
-  repository: cr.selcloud.ru/crypto-bundle/bc-wallet-eth-hdwallet
+  repository: cr.selcloud.ru/crypto-bundle/bc-wallet-ethereum-hdwallet
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
-nameOverride: "bc-wallet-eth-hdwallet-api"
+nameOverride: "bc-wallet-ethereum-hdwallet-api"
 fullnameOverride: ""
 
 serviceAccount:
@@ -16,7 +16,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: "bc-wallet-eth-hdwallet-api"
+  name: "bc-wallet-ethereum-hdwallet-api"
 
 podAnnotations: {}
 
@@ -58,7 +58,7 @@ tolerations: []
 affinity: {}
 
 imagePullSecrets:
-  - name: regcred
+  - name: selectel
 
 app:
   api:

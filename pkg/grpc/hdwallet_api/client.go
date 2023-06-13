@@ -45,7 +45,8 @@ var (
 type Client struct {
 	cfg clientConfig
 
-	client pbApi.HdWalletApiClient
+	grpcConn *originGRPC.ClientConn
+	client   pbApi.HdWalletApiClient
 }
 
 // Init bcexplorer service
@@ -64,6 +65,7 @@ func (s *Client) Init(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	s.grpcConn = grpcConn
 
 	s.client = pbApi.NewHdWalletApiClient(grpcConn)
 
@@ -73,8 +75,7 @@ func (s *Client) Init(ctx context.Context) error {
 // Shutdown bcexplorer service
 // nolint:revive // fixme (autofix)
 func (s *Client) Shutdown(ctx context.Context) error {
-
-	return nil
+	return s.grpcConn.Close()
 }
 
 // GetEnabledWallets is function for getting address from bcexplorer
@@ -126,4 +127,15 @@ func (s *Client) GetDerivationAddress(ctx context.Context,
 	}
 
 	return address, nil
+}
+
+// nolint:revive // fixme
+func NewClient(ctx context.Context,
+	cfg clientConfig,
+) (*Client, error) {
+	srv := &Client{
+		cfg: cfg,
+	}
+
+	return srv, nil
 }

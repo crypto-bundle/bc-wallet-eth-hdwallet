@@ -1,9 +1,9 @@
-FROM golang:1.17-alpine AS gobuild
+FROM golang:1.19-alpine AS gobuild
 
 ENV GO111MODULE on
 ENV GOSUMDB off
 # add go-base repo to exceptions as a private repository.
-ENV GOPRIVATE $GOPRIVATE,github.com/cryptowize-tech
+ENV GOPRIVATE $GOPRIVATE,github.com/cryptowize-tech,github.com/crypto-bundle
 
 # add private github token
 ARG GITHUB_TOKEN

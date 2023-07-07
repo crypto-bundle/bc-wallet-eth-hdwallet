@@ -30,7 +30,7 @@ import (
 
 type clientConfig interface {
 	GetHdWalletApiHost() string
-	GetHdWalletApiPort() string
+	GetHdWalletApiPort() uint
 	GetHdWalletServerAddress() string
 	IsClientBalancer() bool
 }

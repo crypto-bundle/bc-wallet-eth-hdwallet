@@ -33,16 +33,14 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/crypto-bundle/bc-wallet-eth-hdwallet/internal/app"
-	"github.com/crypto-bundle/bc-wallet-eth-hdwallet/internal/config"
-	grpcHandlers "github.com/crypto-bundle/bc-wallet-eth-hdwallet/internal/grpc"
-	"github.com/crypto-bundle/bc-wallet-eth-hdwallet/internal/wallet"
-	"github.com/crypto-bundle/bc-wallet-eth-hdwallet/pkg/grpc/hdwallet_api"
-
 	"github.com/crypto-bundle/bc-wallet-common/pkg/crypter"
 	"github.com/crypto-bundle/bc-wallet-common/pkg/logger"
 	"github.com/crypto-bundle/bc-wallet-common/pkg/postgres"
 	"github.com/crypto-bundle/bc-wallet-common/pkg/vault"
+	"github.com/crypto-bundle/bc-wallet-eth-hdwallet/internal/app"
+	"github.com/crypto-bundle/bc-wallet-eth-hdwallet/internal/config"
+	grpcHandlers "github.com/crypto-bundle/bc-wallet-eth-hdwallet/internal/grpc"
+	"github.com/crypto-bundle/bc-wallet-eth-hdwallet/internal/wallet"
 
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
@@ -131,7 +129,7 @@ func main() {
 		loggerEntry.Fatal("unable to init grpc handlers", zap.Error(err))
 	}
 
-	srv, err := hdwallet_api.NewServer(ctx, loggerEntry, cfg, listenConn)
+	srv, err := grpcHandlers.NewServer(ctx, loggerEntry, cfg, listenConn)
 	if err != nil {
 		loggerEntry.Fatal("unable to create grpc server instance", zap.Error(err),
 			zap.String("port", cfg.Bind))

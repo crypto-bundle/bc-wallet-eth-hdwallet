@@ -32,6 +32,7 @@ type clientConfig interface {
 	GetHdWalletApiHost() string
 	GetHdWalletApiPort() string
 	GetHdWalletServerAddress() string
+	IsClientBalancer() bool
 }
 
 type loggerService interface {

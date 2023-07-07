@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package hdwallet_api
+package grpc
 
 import (
 	"math"

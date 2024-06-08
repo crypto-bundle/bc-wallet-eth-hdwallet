@@ -35,11 +35,11 @@ Currently, support only kubernetes deployment flow via Helm
 
 ### Kubernetes
 Application must be deployed as part of bc-wallet-<BLOCKCHAIN_NAME>-hdwallet bundle.
-bc-wallet-tron-hdwallet-api application must be started as single container in Kubernetes Pod with shared volume.
+bc-wallet-ethereum-hdwallet-api application must be started as single container in Kubernetes Pod with shared volume.
 
 You can see example of HELM-chart deployment application in next repositories:
 * [deploy/helm/hdwallet](deploy/helm/hdwallet)
-* [bc-wallet-ethereum-hdwallet-api/deploy/helm/hdwallet](https://github.com/crypto-bundle/bc-wallet-ethereum-hdwallet/tree/develop/deploy/helm/hdwallet)
+* [bc-wallet-eth-hdwallet-api/deploy/helm/hdwallet](https://github.com/crypto-bundle/bc-wallet-eth-hdwallet/tree/develop/deploy/helm/hdwallet)
 
 ## Third party libraries
 Some parts of this plugin picked up from another repository - [Go HD Wallet tools](https://github.com/wemeetagain/go-hdwallet)

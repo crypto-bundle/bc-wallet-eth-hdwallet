@@ -47,7 +47,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
             -X 'main.CommitID=${COMMIT_ID}' \
             -X 'main.ShortCommitID=${SHORT_COMMIT_ID}'" \
         -buildmode=plugin \
-        -o /src/bin/hdwallet_plugin_tron.so \
+        -o /src/bin/hdwallet_plugin_ethereum.so \
         ./plugin
 
 FROM $PARENT_CONTAINER_IMAGE_NAME

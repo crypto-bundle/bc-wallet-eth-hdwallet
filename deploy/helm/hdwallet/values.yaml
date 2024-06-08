@@ -36,7 +36,7 @@ common:
     annotations: { }
     # The name of the service account to use.
     # If not set and create is true, a name is generated using the fullname template
-    name: "bc-wallet-tron-hdwallet"
+    name: "bc-wallet-ethereum-hdwallet"
 
   nameOverride: "bc-wallet-ethereum-hdwallet"
   fullnameOverride: ""
@@ -65,7 +65,7 @@ common:
   provider:
     _default: cryptobundle
   network:
-    _default: tron
+    _default: ethereum
 
   debug_mode:
     _default: true
@@ -92,7 +92,7 @@ common:
     dir_path:
       _default: /tmp/
     file_pattern:
-      _default: hdwallet_tron_*.sock
+      _default: hdwallet_ethereum_*.sock
 
   vault:
     use_https:
@@ -398,4 +398,4 @@ api:
       production: 24
 
     plugin_path:
-      _default: /usr/local/lib/hdwallet_plugin_tron.so
+      _default: /usr/local/lib/hdwallet_plugin_ethereum.so

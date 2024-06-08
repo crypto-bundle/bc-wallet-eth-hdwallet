@@ -56,4 +56,4 @@ ARG PLUGIN_ROOT="/usr/local/lib/"
 ENV HDWALLET_PLUGIN_PATH="$PLUGIN_ROOT/hdwallet_plugin_ethereum.so"
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$PLUGIN_ROOT"
 
-COPY --from=gobuild /src/bin/hdwallet_plugin_tron.so $PLUGIN_ROOT
+COPY --from=gobuild /src/bin/hdwallet_plugin_ethereum.so $PLUGIN_ROOT

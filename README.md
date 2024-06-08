@@ -1,10 +1,10 @@
-# Bc-wallet-eth-hdwallet
+# bc-wallet-eth-hdwallet
 
 ## Description
 
 HdWallet-plugin is third and last part of hd-wallet applications bundle. This repository contains implementation of
-**Hierarchical Deterministic Wallet** for Tron blockchain. Also, this repo contains Helm-chart description for deploy full
-hdwallet applications bundle for Tron.  
+**Hierarchical Deterministic Wallet** for Ethereum-like blockchain. Also, this repo contains Helm-chart description for deploy full
+HdWallet applications bundle for Ethereum.  
 
 Another two parts of hdwallet-bundle is:
 

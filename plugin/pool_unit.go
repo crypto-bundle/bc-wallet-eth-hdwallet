@@ -35,7 +35,6 @@ package main
 import (
 	"context"
 	"crypto/ecdsa"
-	"crypto/sha256"
 	"fmt"
 	"math/big"
 	"sync"
@@ -163,11 +162,13 @@ func (u *mnemonicWalletUnit) signData(ctx context.Context,
 		return nil, nil, err
 	}
 
-	h256h := sha256.New()
-	h256h.Write(dataForSign)
-	hash := h256h.Sum(nil)
+	//h256h := sha256.New()
+	//h256h.Write(dataForSign)
+	//hash := h256h.Sum(nil)
 
-	signedData, err := crypto.Sign(hash, privKey)
+	hash := crypto.Keccak256Hash(dataForSign)
+
+	signedData, err := crypto.Sign(hash.Bytes(), privKey)
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to sign: %w", err)
 	}

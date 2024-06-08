@@ -38,7 +38,7 @@ common:
     # If not set and create is true, a name is generated using the fullname template
     name: "bc-wallet-tron-hdwallet"
 
-  nameOverride: "bc-wallet-tron-hdwallet"
+  nameOverride: "bc-wallet-ethereum-hdwallet"
   fullnameOverride: ""
 
   podAnnotations: {}
@@ -206,8 +206,8 @@ migrator:
   vault:
     data_path:
       _default:
-        - kv/data/crypto-bundle/bc-wallet-tron-hdwallet/common
-        - kv/data/crypto-bundle/bc-wallet-tron-hdwallet/migrator
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/common
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/migrator
 
 controller:
   image:
@@ -221,8 +221,8 @@ controller:
       _default:
         - kv/data/crypto-bundle/bc-wallet-common/jwt
         - kv/data/crypto-bundle/bc-wallet-common/transit
-        - kv/data/crypto-bundle/bc-wallet-tron-hdwallet/common
-        - kv/data/crypto-bundle/bc-wallet-tron-hdwallet/controller
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/common
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/controller
 
   startupProbe:
     enabled:
@@ -315,15 +315,15 @@ api:
   image:
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
-    path: repository.local/crypto-bundle/bc-wallet-tron-hdwallet-api
+    path: repository.local/crypto-bundle/bc-wallet-ethereum-hdwallet-api
     tag: latest
 
   vault:
     data_path:
       _default:
         - kv/data/crypto-bundle/bc-wallet-common/transit
-        - kv/data/crypto-bundle/bc-wallet-tron-hdwallet/common
-        - kv/data/crypto-bundle/bc-wallet-tron-hdwallet/api
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/common
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/api
 
   startupProbe:
     enabled:

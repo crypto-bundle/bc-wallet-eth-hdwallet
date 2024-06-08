@@ -38,7 +38,7 @@ import (
 )
 
 func TestTronPubKey(t *testing.T) {
-	// test tron
+	// test ethereumWallet
 	prvMagic := [4]byte{0x04, 0x88, 0xad, 0xe4}
 	pubMagic := [4]byte{0x04, 0x88, 0xb2, 0x1e}
 

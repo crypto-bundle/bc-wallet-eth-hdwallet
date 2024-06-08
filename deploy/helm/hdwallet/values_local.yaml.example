@@ -1,28 +1,23 @@
 # Copyright (c) 2022-2024 Aleksei Kotelnikov(gudron2s@gmail.com)
 # License: MIT NON-AI
 
-image:
-  repository: your.dockerrepo.local/crypto-bundle/bc-wallet-tron-hdwallet
+common:
+  imagePullSecrets:
+    - name: selectel
 
-app:
   db:
     host:
-      _default: "10.229.217.3"
-      production: "10.229.217.3"
+      _default: postgresql.default.svc.cluster.local
     port:
-      _default: "5434"
-      production: "5434"
+      _default: 5432
 
   vault:
     use_https:
       _default: false
     host:
-      _default: vault
+      _default: vault.default.svc.cluster.local
     port:
       _default: 8200
-    data_path:
-      _default:
-        - kv/data/crypto-bundle/bc-wallet-tron-hdwallet
     auth_method:
       _default: token
     token_renewal:
@@ -33,13 +28,50 @@ app:
 
   redis:
     host:
-      _default: 10.229.217.3
+      _default: redis-master.default.svc.cluster.local
     port:
-      _default: 6380
+      _default: 6379
 
   nats:
     hosts:
       _default:
-        - nats://10.229.217.3:4223
-        - nats://10.229.217.3:4224
-        - nats://10.229.217.3:4225
+        - nats://nats.default.svc.cluster.local:4222
+
+migrator:
+  image:
+    path: repository.local/crypto-bundle/bc-wallet-common-hdwallet-migrator
+    tag: latest
+
+  migration_dir: /opt/bc-wallet-common-migrator/migrations
+
+  vault:
+    data_path:
+      _default:
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/common
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/migrator
+
+controller:
+  image:
+    # Overrides the image tag whose default is the chart appVersion.
+    path: repository.local/crypto-bundle/bc-wallet-common-hdwallet-controller
+    tag: latest
+
+  vault:
+    data_path:
+      _default:
+        - kv/data/crypto-bundle/bc-wallet-common/jwt
+        - kv/data/crypto-bundle/bc-wallet-common/transit
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/common
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/controller
+
+api:
+  image:
+    path: repository.local/crypto-bundle/bc-wallet-ethereum-hdwallet-api
+    tag: latest
+
+  vault:
+    data_path:
+      _default:
+        - kv/data/crypto-bundle/bc-wallet-common/transit
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/common
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/api

@@ -2,7 +2,7 @@ annotations:
   licenses: MIT NON-AI
 
 apiVersion: v2
-name: bc-wallet-tron-hdwallet
+name: bc-wallet-ethereum-hdwallet
 description: A Helm chart for Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
@@ -17,7 +17,7 @@ type: application
 keywords:
   - hdwallet
   - hierarchical deterministic wallet
-  - tron
+  - ethereum
   - blockchain
   - signature
 

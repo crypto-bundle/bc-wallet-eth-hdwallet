@@ -176,3 +176,8 @@ Start of big application refactoring
 ### Changed
 * Changed MIT License to NON-AI MIT
 * Changed version of hdwallet-controller dependency to v0.0.29
+
+## [v0.0.31] 08.06.2024
+### Changed
+* Merged code from bc-wallet-tron-hdwallet
+* Ethereum HdWallet implementation is pluggable extension now

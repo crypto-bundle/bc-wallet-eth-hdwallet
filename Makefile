@@ -15,7 +15,7 @@ build_plugin:
 			-X 'main.CommitID=${COMMIT_ID}' \
 			-X 'main.ShortCommitID=${SHORT_COMMIT_ID}'" \
 		-buildmode=plugin \
-		-o ./build/tron.so \
+		-o ./build/ethereum.so \
 		./plugin
 
 test_plugin:

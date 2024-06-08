@@ -1,4 +1,4 @@
-# Bc-wallet-tron-hdwallet
+# Bc-wallet-eth-hdwallet
 
 ## Description
 
@@ -14,7 +14,7 @@ Application for control access to wallets. Create or disable wallets, get accoun
 * [bc-wallet-common-hdwallet-api](https://github.com/crypto-bundle/bc-wallet-common-hdwallet-api) - 
 Storage-less application for manage in-memory HD-wallets and execute session and signature requests.
 
-### Tron HdWallet plugin
+### Ethereum And Ethereum-like HdWallet plugin
 Implementation of HdWallet plugin contains exported functions:
 * ```NewPoolUnitfunc(walletUUID string, mnemonicDecryptedData string) (interface{}, error)```
 * ```GenerateMnemonic func() (string, error)```
@@ -47,4 +47,4 @@ written by [Cayman(wemeetagain)](https://github.com/wemeetagain)
 
 ## Licence
 
-**bc-wallet-tron-hdwallet** is licensed under the [MIT NON-AI](./LICENSE) License.
+**bc-wallet-eth-hdwallet** is licensed under the [MIT NON-AI](./LICENSE) License.

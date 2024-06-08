@@ -47,8 +47,7 @@ const (
 
 	BtcCoinNumber = 0
 
-	TronCoinNumber = 195
-	TronBytePrefix = byte(0x41)
+	EthCoinNumber = 60
 )
 
 // wallet contains the individual mnemonic and seed

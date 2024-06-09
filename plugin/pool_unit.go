@@ -42,7 +42,7 @@ import (
 	pbCommon "github.com/crypto-bundle/bc-wallet-common-hdwallet-controller/pkg/grpc/common"
 
 	"github.com/btcsuite/btcd/btcec/v2"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/core/types"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 )
@@ -68,7 +68,9 @@ func (e *addressData) ClonePrivateKey() *ecdsa.PrivateKey {
 type mnemonicWalletUnit struct {
 	mu *sync.Mutex
 
-	hdWalletSvc *wallet
+	hdWalletSvc           *wallet
+	signDataMarshallerSvc *signDataMarshaller
+	dataSigner            types.Signer
 
 	mnemonicWalletUUID string
 	mnemonicHash       string
@@ -162,18 +164,22 @@ func (u *mnemonicWalletUnit) signData(ctx context.Context,
 		return nil, nil, err
 	}
 
-	//h256h := sha256.New()
-	//h256h.Write(dataForSign)
-	//hash := h256h.Sum(nil)
+	txData, err := u.signDataMarshallerSvc.MarshallSignData(dataForSign)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	hash := crypto.Keccak256Hash(dataForSign)
+	signedTx, err := types.SignNewTx(privKey, u.dataSigner, txData)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	signedData, err := crypto.Sign(hash.Bytes(), privKey)
+	signedTxRawData, err := signedTx.MarshalBinary()
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to sign: %w", err)
 	}
 
-	return addr, signedData, nil
+	return addr, signedTxRawData, nil
 }
 
 func (u *mnemonicWalletUnit) LoadAccount(ctx context.Context,
@@ -382,10 +388,19 @@ func NewPoolUnit(walletUUID string,
 		return nil, createErr
 	}
 
+	var marshaller = marshallerSvc
+	if marshaller == nil {
+		marshaller = newMarshallerService()
+	}
+
+	signer := &types.HomesteadSigner{}
+
 	return &mnemonicWalletUnit{
 		mu: &sync.Mutex{},
 
-		hdWalletSvc: hdWalletSvc,
+		hdWalletSvc:           hdWalletSvc,
+		signDataMarshallerSvc: marshaller,
+		dataSigner:            signer,
 
 		mnemonicWalletUUID: walletUUID,
 

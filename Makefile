@@ -1,5 +1,19 @@
 default: build_plugin
 
+build_proto:
+	protoc -I ./pkg/proto/ \
+		--go_out=./pkg/proto \
+		--go_opt=paths=source_relative \
+		--go-grpc_out=./pkg/proto \
+		--go-grpc_opt=paths=source_relative \
+		--openapiv2_out=logtostderr=true:./pkg/proto/ \
+		--grpc-gateway_out=./pkg/proto \
+		--grpc-gateway_opt=logtostderr=true \
+		--grpc-gateway_opt=paths=source_relative \
+		--doc_out=./pkg/proto/ \
+		--doc_opt=markdown,$@.md \
+		./pkg/proto/*.proto
+
 build_plugin:
 	$(eval SHORT_COMMIT_ID=$(shell git rev-parse --short HEAD))
 	$(eval COMMIT_ID=$(shell git rev-parse HEAD))

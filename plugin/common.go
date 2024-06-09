@@ -63,6 +63,10 @@ var (
 	BuildDateTS string = "1713280105"
 )
 
+func init() {
+	newMarshallerService()
+}
+
 func GetPluginName() string {
 	return evmPluginName
 }

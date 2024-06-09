@@ -271,8 +271,8 @@ func (k *keyBundle) CloneECDSAPrivateKey() *ecdsa.PrivateKey {
 	clonedPrivKey := ecdsa.PrivateKey{
 		PublicKey: ecdsa.PublicKey{
 			Curve: btcec.S256(),
-			X:     (&big.Int{}).SetBytes(k.PrivateECDSA.X.Bytes()),
-			Y:     (&big.Int{}).SetBytes(k.PrivateECDSA.Y.Bytes()),
+			X:     (&big.Int{}).SetBytes(k.PublicECDSA.X.Bytes()),
+			Y:     (&big.Int{}).SetBytes(k.PublicECDSA.Y.Bytes()),
 		},
 		D: (&big.Int{}).SetBytes(k.PrivateECDSA.D.Bytes()),
 	}

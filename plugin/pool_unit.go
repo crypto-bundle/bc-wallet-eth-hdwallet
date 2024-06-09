@@ -35,7 +35,6 @@ package main
 import (
 	"context"
 	"crypto/ecdsa"
-	"crypto/sha256"
 	"fmt"
 	"math/big"
 	"sync"
@@ -163,11 +162,13 @@ func (u *mnemonicWalletUnit) signData(ctx context.Context,
 		return nil, nil, err
 	}
 
-	h256h := sha256.New()
-	h256h.Write(dataForSign)
-	hash := h256h.Sum(nil)
+	//h256h := sha256.New()
+	//h256h.Write(dataForSign)
+	//hash := h256h.Sum(nil)
 
-	signedData, err := crypto.Sign(hash, privKey)
+	hash := crypto.Keccak256Hash(dataForSign)
+
+	signedData, err := crypto.Sign(hash.Bytes(), privKey)
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to sign: %w", err)
 	}
@@ -207,24 +208,24 @@ func (u *mnemonicWalletUnit) loadAccountDataByPath(ctx context.Context,
 	mapKey := fmt.Sprintf(addrPatKeyTemplate, account, change, index)
 	addrData, isExists := u.addressPool[mapKey]
 	if !isExists {
-		tronAccount, walletErr := u.hdWalletSvc.NewAccount(account, change, index)
+		hdWalletAccount, walletErr := u.hdWalletSvc.NewAccount(account, change, index)
 		if walletErr != nil {
 			return nil, nil, walletErr
 		}
 
-		addr, walletErr := tronAccount.GetAddress()
+		addr, walletErr := hdWalletAccount.GetAddress()
 		if walletErr != nil {
 			return nil, nil, walletErr
 		}
 
 		addrData = &addressData{
 			address:    addr,
-			privateKey: tronAccount.CloneECDSAPrivateKey(),
+			privateKey: hdWalletAccount.CloneECDSAPrivateKey(),
 		}
 		u.addressPool[mapKey] = addrData
 
-		tronAccount.ClearSecrets()
-		tronAccount = nil
+		hdWalletAccount.ClearSecrets()
+		hdWalletAccount = nil
 	}
 
 	return &addrData.address, addrData.ClonePrivateKey(), nil
@@ -355,17 +356,17 @@ func (u *mnemonicWalletUnit) getAddressAndMarshal(ctx context.Context,
 func (u *mnemonicWalletUnit) getAddressByPath(_ context.Context,
 	account, change, index uint32,
 ) (*string, error) {
-	tronWallet, err := u.hdWalletSvc.NewAccount(account, change, index)
+	hdWalletAccount, err := u.hdWalletSvc.NewAccount(account, change, index)
 	if err != nil {
 		return nil, err
 	}
 
 	defer func() {
-		tronWallet.ClearSecrets()
-		tronWallet = nil
+		hdWalletAccount.ClearSecrets()
+		hdWalletAccount = nil
 	}()
 
-	blockchainAddress, err := tronWallet.GetAddress()
+	blockchainAddress, err := hdWalletAccount.GetAddress()
 	if err != nil {
 		return nil, err
 	}

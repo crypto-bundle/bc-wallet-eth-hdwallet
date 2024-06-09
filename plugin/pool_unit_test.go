@@ -35,12 +35,13 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"fmt"
+	"log"
 	"testing"
 
 	pbCommon "github.com/crypto-bundle/bc-wallet-common-hdwallet-controller/pkg/grpc/common"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 	"github.com/tyler-smith/go-bip39"
@@ -73,9 +74,9 @@ func TestMnemonicWalletUnit_GetWalletUUID(t *testing.T) {
 		ExpectedAddress string
 	}
 
-	// WARN: DO NOT USE THESE MNEMONIC IN MAINNET OR TESTNET. Usage only in unit-tests
-	// WARN: DO NOT USE THESE MNEMONIC IN MAINNET OR TESTNET. Usage only in unit-tests
-	// WARN: DO NOT USE THESE MNEMONIC IN MAINNET OR TESTNET. Usage only in unit-tests
+	// WARN: DO NOT USE THIS MNEMONIC IN MAINNET OR TESTNET. Usage only in unit-tests
+	// WARN: DO NOT USE THIS MNEMONIC IN MAINNET OR TESTNET. Usage only in unit-tests
+	// WARN: DO NOT USE THIS MNEMONIC IN MAINNET OR TESTNET. Usage only in unit-tests
 	tCase := &testCase{
 		WalletUUID: uuid.NewString(),
 		Mnemonic:   "seven kitten wire trap family giraffe globe access dinosaur upper forum aerobic dash segment cruise concert giant upon sniff armed rain royal firm state",
@@ -84,7 +85,7 @@ func TestMnemonicWalletUnit_GetWalletUUID(t *testing.T) {
 			InternalIndex: 5,
 			AddressIndex:  55,
 		},
-		ExpectedAddress: "TRZUb6GVH922CHYty9NaFpVZWuf8GZJ3va",
+		ExpectedAddress: "0xec9bddc83CC1F391Db7e7853FF7E444B07c0691d",
 	}
 
 	poolUnitIntrf, loopErr := NewPoolUnit(tCase.WalletUUID, tCase.Mnemonic)
@@ -138,7 +139,7 @@ func TestMnemonicWalletUnit_GetAccountAddress(t *testing.T) {
 				InternalIndex: 13,
 				AddressIndex:  114,
 			},
-			ExpectedAddress: "TFyMUdJsREv3Q1ooMhV5r2UDGFSL4xgFeC",
+			ExpectedAddress: "0xb96b5c70ff4102d0900E9Fc0614E5BA4FE486281",
 		},
 		{
 			Mnemonic: "obscure town quick bundle north message want sketch brass tone vast spoil home gentle field ozone mushroom current math cat canvas plunge stay truly",
@@ -147,7 +148,7 @@ func TestMnemonicWalletUnit_GetAccountAddress(t *testing.T) {
 				InternalIndex: 10300,
 				AddressIndex:  104000,
 			},
-			ExpectedAddress: "TBKmbAG6JefDEg741YpsMPTB7MegySqs45",
+			ExpectedAddress: "0xC342507376b862F9f09845Db10915c256473Bd9e",
 		},
 		{
 			Mnemonic: "beach large spray gentle buyer hover flock dream hybrid match whip ten mountain pitch enemy lobster afford barrel patrol desk trigger output excuse truck",
@@ -156,7 +157,7 @@ func TestMnemonicWalletUnit_GetAccountAddress(t *testing.T) {
 				InternalIndex: 104,
 				AddressIndex:  1005,
 			},
-			ExpectedAddress: "TWW7CQdsogbqfc5FrSb6MKu22QS4Reg3mH",
+			ExpectedAddress: "0x7CD20e3Cf394F1C53316782BA553F2A37Ac93618",
 		},
 	}
 
@@ -283,30 +284,42 @@ func TestMnemonicWalletUnit_GetMultipleAccounts(t *testing.T) {
 				},
 			},
 			ExpectedAddress: map[string]*pbCommon.DerivationAddressIdentity{
-				"TAMcYXxBevDjYK1wVBoUsGr9F1Gc1BvgYX": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 114},
-				"TAT4RTK3FKQbgevkiTATT9EnFar8hK3hzK": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 115},
-				"TU88zp2gvowrvxxuskzbZhRWPcdB96yQNi": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 116},
-				"THDKHgZxjEDfUWh7bQuF3eB3q2cipeqWrM": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 117},
-				"TMkLVEeyLBcWPTqkxvLBpq37U7ZXBfHDhZ": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 118},
-				"TSq5zADYT1GK4zedGCQT2Gh8EtWDn61iEd": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 119},
-				"THtKSpFy4owX3NjNzsqobLdWda37Z5B7Gv": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 120},
-				"TAAnRtjKHzhvkC1XGfDuVxkfMt6u5UdJ7P": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 121},
-				"TUBsnau67pNS5yqpYSJ1SzQ1CsjKJsTPwS": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 122},
-				"TKdbf5oMFYxWSLSUKnZbbdBGLg1zcypKzj": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 123},
-				"TUc2Q73GuLxupQ7BCZnxwjhDiTPC6sro4A": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 124},
+				"0x3c601d8b930Be1935495747A278b63fBAA26d905": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 114},
+				"0xA3e51Ee437F0A0150E5eB25eFe353d45C4162cb2": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 115},
+				"0x3D88dF24e098108C8147Fe25856B064b30c92A99": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 116},
+				"0xBD3B46A13A8a3d312989F700F7C2781dEe2D3CEe": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 117},
+				"0xc737244E70A749B218E8AF0771c862bF10A724b4": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 118},
+				"0x40477746fd12171626DADB9fD4E0fd6a6CB12bfA": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 119},
+				"0x2d2f4760b6D7A98e7E79E2322d07BF10304537Bb": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 120},
+				"0x082e99DE321005e16e08b09cd28FEEfA2609e4D7": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 121},
+				"0x6e8C67C41CE8B3b0Fd5cCC0b8728a0E4a22Cae29": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 122},
+				"0xE025BC9e69F040247375f177ed7633545C52E1be": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 123},
+				"0xb3D6C84FBd2d5E71d7EA86d99dbd45bAa2A94Ea9": {AccountIndex: 3, InternalIndex: 8, AddressIndex: 124},
 				//
-				"TE6JoSwxS1EdannPwasPPWrt6GcjjucDAU": {AccountIndex: 155, InternalIndex: 5, AddressIndex: 4},
-				"TFjUm8k4BKpVAG9iqhJhihbRW2Gn454Z3r": {AccountIndex: 155, InternalIndex: 5, AddressIndex: 5},
-				"TTLjtMRL2V3v2NUGbigFGejCkF5DDtLvVp": {AccountIndex: 155, InternalIndex: 5, AddressIndex: 6},
-				"TGDoLJNa5oT46wSsVvFiY18YcoNXE2AaMQ": {AccountIndex: 155, InternalIndex: 5, AddressIndex: 7},
-				"TZ8z3nS98FBQiZSFifLF6m9h23EDFrgA6e": {AccountIndex: 155, InternalIndex: 5, AddressIndex: 8},
+				"0x0EEDf8b3BFdef8C13f2353b7059B9f5F8CA80871": {AccountIndex: 155, InternalIndex: 5, AddressIndex: 4},
+				"0xB7D7110da3e46b44a44138dEE8ee52d086C12f15": {AccountIndex: 155, InternalIndex: 5, AddressIndex: 5},
+				"0x6790741b690c988765D583ec744A57C2e043e54e": {AccountIndex: 155, InternalIndex: 5, AddressIndex: 6},
+				"0x794434525BcCA3ba1E1393Cc89756fE854e64317": {AccountIndex: 155, InternalIndex: 5, AddressIndex: 7},
+				"0x8BB042AE94FeeD0cCC24C03A6d726Fa92cbfC23B": {AccountIndex: 155, InternalIndex: 5, AddressIndex: 8},
 				//
-				"TDA3ZnCuYPJNdGiax5XfVFVh4fm3beayuk": {AccountIndex: 2555, InternalIndex: 50, AddressIndex: 250},
-				"TWMgaesoun1GVbhjfKBYqvRb5PJU6eW9xk": {AccountIndex: 2555, InternalIndex: 50, AddressIndex: 251},
-				"TRQdPDaeHd2ZbZGKGkASx6oX3jTPHsjkwf": {AccountIndex: 2555, InternalIndex: 50, AddressIndex: 252},
-				"TCALJChrKN5Q9FjCZpYGTL5KGipE66ZF94": {AccountIndex: 2555, InternalIndex: 50, AddressIndex: 253},
-				"TDpavWFBnCUbTSZF6yxk4UdGa4yPCNpaiY": {AccountIndex: 2555, InternalIndex: 50, AddressIndex: 254},
-				"TXeLYYR6bE29aRA8pAfPqbu1Svx3hZgdVg": {AccountIndex: 2555, InternalIndex: 50, AddressIndex: 255},
+				"0x5B39D2679ae8Ea338B5fe0Cd95502DaA804af268": {AccountIndex: 2555,
+					InternalIndex: 50,
+					AddressIndex:  250},
+				"0x5B7a0d6C846001F611498Df95b2Db0614E89ab23": {AccountIndex: 2555,
+					InternalIndex: 50,
+					AddressIndex:  251},
+				"0xc8808DCd66962e8fbbd0bd1B8dB2D8aCA8284cD9": {AccountIndex: 2555,
+					InternalIndex: 50,
+					AddressIndex:  252},
+				"0xEF98034363821a9Dd6f9619A58E56CB7D208A9E5": {AccountIndex: 2555,
+					InternalIndex: 50,
+					AddressIndex:  253},
+				"0x4C222F221E0e0009edAD1eaB05ea4574f490B2dB": {AccountIndex: 2555,
+					InternalIndex: 50,
+					AddressIndex:  254},
+				"0xA0F6637C3083a07Ae16162D720d6dd65070B8Cc4": {AccountIndex: 2555,
+					InternalIndex: 50,
+					AddressIndex:  255},
 			},
 		},
 	}
@@ -402,7 +415,7 @@ func TestMnemonicWalletUnit_LoadAddressByPath(t *testing.T) {
 				InternalIndex: 12,
 				AddressIndex:  3,
 			},
-			ExpectedAddress: "TS98RrhGNPeXNXqFYhYfeFd2AAUK7z5aED",
+			ExpectedAddress: "0x10610cABbc97DD5ccd46B2571eE9a7968822A63C",
 		},
 		{
 			Mnemonic: "slogan follow oil world head protect patrol wagon toddler fly kangaroo kite dash essay shoulder worth one grace shift good disease biology magic pottery",
@@ -411,7 +424,7 @@ func TestMnemonicWalletUnit_LoadAddressByPath(t *testing.T) {
 				InternalIndex: 10000,
 				AddressIndex:  100000,
 			},
-			ExpectedAddress: "TZ8Tenb9okzq4x626vuux3p3SMXahu3LyG",
+			ExpectedAddress: "0xEfFB3DBe9e1a893ee2e90B93e067E266FEf3196a",
 		},
 		{
 			Mnemonic: "image video differ dumb later child gather smart supply mountain salon ring boy mystery hope secret present bar then joke latin guitar view devote",
@@ -420,7 +433,7 @@ func TestMnemonicWalletUnit_LoadAddressByPath(t *testing.T) {
 				InternalIndex: 102,
 				AddressIndex:  1003,
 			},
-			ExpectedAddress: "TLFMBiQvLjhp9AK9N2wvgc77dsuKBuLsiV",
+			ExpectedAddress: "0x3ca3d79305Ee17c2707cF5114b5Be30e5f88eB3F",
 		},
 	}
 
@@ -474,10 +487,13 @@ func TestMnemonicWalletUnit_LoadAddressByPath(t *testing.T) {
 
 func TestMnemonicWalletUnit_SignData(t *testing.T) {
 	type testCase struct {
-		Mnemonic         string
-		AddressPath      *pbCommon.DerivationAddressIdentity
-		AddressPublicKey string
-		DataForSign      []byte
+		Mnemonic    string
+		AddressPath *pbCommon.DerivationAddressIdentity
+
+		CompressedPublicKey string
+		PublicKey           string
+
+		DataForSign []byte
 
 		ExpectedAddress    string
 		ExpectedSignedData []byte
@@ -496,7 +512,9 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 			},
 			DataForSign: []byte{0x0, 0x2, 0x3, 0x4},
 
-			ExpectedAddress: "TS5nGhVnjSVudb58XLUCqYTgYtjY7abJJH",
+			CompressedPublicKey: "0x030dbc0361bb42cedfce71de5bd969a573d952e23e44a905bd89d44e3b3b2bafb0",
+			PublicKey:           "0x040dbc0361bb42cedfce71de5bd969a573d952e23e44a905bd89d44e3b3b2bafb08142c1ace72356a45089dab3429746a68182c5398851b5baa835375560d2755b",
+			ExpectedAddress:     "0xf8A0F16782625B16260D0A4b0Ed107412bd95d56",
 		},
 		{
 			Mnemonic: "laundry file mystery rate absorb wrist despair cook near afraid account mirror name chair lake regular vicious oblige release vicious identify glimpse flight help",
@@ -507,7 +525,9 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 			},
 			DataForSign: []byte{0x5, 0x6, 0x7, 0x8},
 
-			ExpectedAddress: "THjwZivHc9kyosKYTF7MJLTqeCq2xdMgL6",
+			CompressedPublicKey: "0x0370cd063d2aa795777bd6111e8f0ab6bc062a91721dbf9018cba3ab0e7eb3d798",
+			PublicKey:           "0x0470cd063d2aa795777bd6111e8f0ab6bc062a91721dbf9018cba3ab0e7eb3d79868d853f137d5d4096b715a7d480590bde3ee6cd42beab9b638eeeec8ec1da08b",
+			ExpectedAddress:     "0x9C4Bb7A12cAd7145682854BBCBF9CaDfFD4EEc01",
 		},
 		{
 			Mnemonic: "busy spawn solar december element round wild buddy furnace help clog tired object camera resist maze fuel need stock rule spot diagram aisle expect",
@@ -516,10 +536,11 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 				InternalIndex: 8,
 				AddressIndex:  7,
 			},
-			AddressPublicKey: "030ba1318a2d4258cecce5725c393e3a6ab7d60cde9e6f39106cd99cf63aa36032",
-			DataForSign:      []byte{0x9, 0x10, 0x11, 0x12},
+			CompressedPublicKey: "0x027465728e9c06c6c2da32e96159ae8e15ec1381baba99c7be2607dc6604594830",
+			PublicKey:           "0x047465728e9c06c6c2da32e96159ae8e15ec1381baba99c7be2607dc6604594830e58aa45697f4ff1dd1ea64780da8c2217a2b5ca0a6f35e47f58877d3ddc44938",
+			DataForSign:         []byte{0x9, 0x10, 0x11, 0x12},
 
-			ExpectedAddress: "TPuC6Y4aFGZPu1kfiiWgkPVSUgi2oYynRz",
+			ExpectedAddress: "0xdD4aE0268C7F6144bDb08C1dEC349bCe5f239E30",
 		},
 	}
 
@@ -581,21 +602,50 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 			signed[crypto.RecoveryIDOffset] -= 27 // Transform yellow paper V from 27/28 to 0/1
 		}
 
-		h256h := sha256.New()
-		h256h.Write(tCase.DataForSign)
-		hash := h256h.Sum(nil)
+		//h256h := sha256.New()
+		//h256h.Write(tCase.DataForSign)
+		//hash := h256h.Sum(nil)
+		//
+		//h256h.Reset()
+		//h256h = nil
 
-		h256h.Reset()
-		h256h = nil
-
-		pubKey, loopErr := crypto.SigToPub(hash, signed)
+		hash := crypto.Keccak256Hash(tCase.DataForSign)
+		sigPublicKeyECDSA, loopErr := crypto.SigToPub(hash.Bytes(), signed)
 		if loopErr != nil {
 			t.Fatalf("%s: %e", "unable to get public key from signed message", loopErr)
 		}
+		sigPublicKeyECDSABytes := crypto.FromECDSAPub(sigPublicKeyECDSA)
+		sigPublicKeyECDSAString := hexutil.Encode(sigPublicKeyECDSABytes)
 
-		tronAddr := pubKeyToTronAddress(*pubKey)
-		if tCase.ExpectedAddress != tronAddr {
-			t.Fatalf("%s", "tron addr from pubKey not equal with expected")
+		if tCase.PublicKey != sigPublicKeyECDSAString {
+			t.Fatalf("%s", "ethereumWallet addr from pubKey not equal with expected")
+		}
+
+		sigPublicKey, err := crypto.Ecrecover(hash.Bytes(), signed)
+		if err != nil {
+			log.Fatal(err)
+		}
+		sigPubKeyString := hexutil.Encode(sigPublicKey)
+
+		if tCase.PublicKey != sigPubKeyString {
+			t.Fatalf("%s", "ethereumWallet addr from pubKey not equal with expected")
+		}
+
+		compressed := crypto.CompressPubkey(sigPublicKeyECDSA)
+		compressedSigPublicKeyECDSAString := hexutil.Encode(compressed)
+		if tCase.CompressedPublicKey != compressedSigPublicKeyECDSAString {
+			t.Fatalf("%s", "ethereumWallet addr from pubKey not equal with expected")
+		}
+
+		ethAddr := crypto.PubkeyToAddress(*sigPublicKeyECDSA)
+		ethAddrStr := ethAddr.String()
+
+		if tCase.ExpectedAddress != ethAddrStr {
+			t.Fatalf("%s", "ethereumWallet addr from pubKey not equal with expected")
+		}
+
+		if tCase.ExpectedAddress != *addr {
+			t.Fatalf("%s", "ethereumWallet addr from pubKey not equal with expected")
 		}
 	}
 }
@@ -619,7 +669,7 @@ func TestMnemonicWalletUnit_UnloadWallet(t *testing.T) {
 				InternalIndex: 8,
 				AddressIndex:  11,
 			},
-			ExpectedAddress: "TNnvBFnjrsdTqCnjPRsZZP24pPA1VYUqAi",
+			ExpectedAddress: "0xb0160385Da6536fb6790466Fc9Eef8F9C1384A25",
 		},
 		{
 			Mnemonic: "empower plate axis divorce neither noodle above flight very indoor zone mango sand exhaust nominee solid combine picnic gospel myth stem raw garage veteran",
@@ -628,7 +678,7 @@ func TestMnemonicWalletUnit_UnloadWallet(t *testing.T) {
 				InternalIndex: 4,
 				AddressIndex:  8,
 			},
-			ExpectedAddress: "TWnoUuXdREoJFFc2vAuwHPUz33tuKJaonK",
+			ExpectedAddress: "0x05843f146f4F0186b27983E87342Eb17A27F111F",
 		},
 		{
 			Mnemonic: "sea vault tattoo laugh ugly where saddle six usage install one cube affair sick used actress zebra fuel sunny tackle can siege develop drop",
@@ -637,7 +687,7 @@ func TestMnemonicWalletUnit_UnloadWallet(t *testing.T) {
 				InternalIndex: 64,
 				AddressIndex:  4096,
 			},
-			ExpectedAddress: "TDXRtZoqjkJxtr68deRyKJ5Kkkf8u4kJS1",
+			ExpectedAddress: "0xf731F8246F965A3CaC805D56ca809586B9786eF3",
 		},
 	}
 

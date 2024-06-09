@@ -47,13 +47,13 @@ RUN --mount=type=cache,target=/go/pkg/mod \
             -X 'main.CommitID=${COMMIT_ID}' \
             -X 'main.ShortCommitID=${SHORT_COMMIT_ID}'" \
         -buildmode=plugin \
-        -o /src/bin/hdwallet_plugin_tron.so \
+        -o /src/bin/hdwallet_plugin_ethereum.so \
         ./plugin
 
 FROM $PARENT_CONTAINER_IMAGE_NAME
 
 ARG PLUGIN_ROOT="/usr/local/lib/"
-ENV HDWALLET_PLUGIN_PATH="$PLUGIN_ROOT/hdwallet_plugin_tron.so"
+ENV HDWALLET_PLUGIN_PATH="$PLUGIN_ROOT/hdwallet_plugin_ethereum.so"
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$PLUGIN_ROOT"
 
-COPY --from=gobuild /src/bin/hdwallet_plugin_tron.so $PLUGIN_ROOT
+COPY --from=gobuild /src/bin/hdwallet_plugin_ethereum.so $PLUGIN_ROOT

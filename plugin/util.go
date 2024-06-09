@@ -79,8 +79,6 @@ import (
 	"math/big"
 
 	btcec "github.com/btcsuite/btcd/btcec/v2"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/shengdoushi/base58"
 	// nolint:staticcheck // its library function
 	"golang.org/x/crypto/ripemd160"
 )
@@ -95,25 +93,6 @@ func stringToMagic(magic string) [4]byte {
 	copy(b[:], t)
 
 	return b
-}
-
-func pubKeyToTronAddress(key ecdsa.PublicKey) string {
-	addr := crypto.PubkeyToAddress(key)
-
-	addrTrxBytes := make([]byte, 0)
-	addrTrxBytes = append(addrTrxBytes, TronBytePrefix)
-	addrTrxBytes = append(addrTrxBytes, addr.Bytes()...)
-
-	crc := calcCheckSum(addrTrxBytes)
-
-	addrTrxBytes = append(addrTrxBytes, crc...)
-
-	//nolint:gocritic // ok. Just reminder hot to generate address_hex for TronKey table
-	// addrTrxHex := hex.EncodeToString(addrTrxBytes)
-
-	addrTrx := base58.Encode(addrTrxBytes, base58.BitcoinAlphabet)
-
-	return addrTrx
 }
 
 func hash160(data []byte) ([]byte, error) {
@@ -227,18 +206,6 @@ func byteToUint16(b []byte) uint16 {
 		b = append(zero, b...)
 	}
 	return binary.BigEndian.Uint16(b)
-}
-
-func calcCheckSum(data []byte) []byte {
-	h256h0 := sha256.New()
-	h256h0.Write(data)
-	h0 := h256h0.Sum(nil)
-
-	h256h1 := sha256.New()
-	h256h1.Write(h0)
-	h1 := h256h1.Sum(nil)
-
-	return h1[:4]
 }
 
 func zeroKey(key *ecdsa.PrivateKey) {

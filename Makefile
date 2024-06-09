@@ -15,7 +15,7 @@ build_plugin:
 			-X 'main.CommitID=${COMMIT_ID}' \
 			-X 'main.ShortCommitID=${SHORT_COMMIT_ID}'" \
 		-buildmode=plugin \
-		-o ./build/tron.so \
+		-o ./build/ethereum.so \
 		./plugin
 
 test_plugin:
@@ -34,7 +34,7 @@ deploy:
 	$(eval migrator_container_path=$(repository)/crypto-bundle/bc-wallet-common-hdwallet-migrator)
 	$(eval controller_container_path=$(repository)/crypto-bundle/bc-wallet-common-hdwallet-controller)
 	$(eval parent_api_container_path=$(repository)/crypto-bundle/bc-wallet-common-hdwallet-api)
-	$(eval target_container_path=$(repository)/crypto-bundle/bc-wallet-tron-hdwallet-api)
+	$(eval target_container_path=$(repository)/crypto-bundle/bc-wallet-ethereum-hdwallet-api)
 	$(eval context=$(or $(context),k0s-dev-cluster))
 	$(eval platform=$(or $(platform),linux/amd64))
 
@@ -61,7 +61,7 @@ deploy:
 	docker push $(target_container_path):latest
 
 	helm --kube-context $(context) upgrade \
-		--install bc-wallet-tron-hdwallet \
+		--install bc-wallet-ethereum-hdwallet \
 		--set "global.migrator.image.path=$(migrator_container_path)" \
 		--set "global.migrator.image.tag=latest" \
 		--set "global.api.image.path=$(target_container_path)" \

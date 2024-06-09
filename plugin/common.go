@@ -32,7 +32,7 @@
 
 package main
 
-const tronPluginName = "tron-hdwallet-plugin"
+const evmPluginName = "ethereum-hdwallet-plugin"
 
 // DO NOT EDIT THESE VARIABLES DIRECTLY. These are build-time constants
 // DO NOT USE THESE VARIABLES IN APPLICATION CODE. USE commonConfig.NewLdFlagsManager SERVICE-COMPONENT INSTEAD OF IT
@@ -64,7 +64,7 @@ var (
 )
 
 func GetPluginName() string {
-	return tronPluginName
+	return evmPluginName
 }
 
 func GetPluginReleaseTag() string {

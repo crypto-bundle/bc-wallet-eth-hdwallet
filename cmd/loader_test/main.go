@@ -35,15 +35,17 @@ package main
 import (
 	"context"
 	"fmt"
-	pbCommon "github.com/crypto-bundle/bc-wallet-common-hdwallet-controller/pkg/grpc/common"
-	"github.com/google/uuid"
-	"github.com/tyler-smith/go-bip39"
-	"google.golang.org/protobuf/types/known/anypb"
 	"log"
 	"os"
 	"plugin"
 	"strconv"
 	"time"
+
+	pbCommon "github.com/crypto-bundle/bc-wallet-common-hdwallet-controller/pkg/grpc/common"
+
+	"github.com/google/uuid"
+	"github.com/tyler-smith/go-bip39"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 func main() {
@@ -93,7 +95,7 @@ func main() {
 		return pluginFunc, nil
 	}
 
-	p, err := plugin.Open("./build/tron.so")
+	p, err := plugin.Open("./build/ethereum.so")
 	if err != nil {
 		log.Fatalf("%s: %e", "unable to load pluggable extension", err)
 	}

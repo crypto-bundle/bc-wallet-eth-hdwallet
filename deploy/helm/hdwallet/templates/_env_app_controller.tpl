@@ -10,7 +10,7 @@ License: MIT NON-AI
 - name: VAULT_AUTH_TOKEN
   valueFrom:
     secretKeyRef:
-      name: bc-wallet-tron-hdwallet
+      name: bc-wallet-ethereum-hdwallet
       key: vault_controller_user_token
       optional: false
 

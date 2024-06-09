@@ -37,10 +37,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
-// tron parent
-type tron struct {
+// ethereumWallet parent
+type ethereumWallet struct {
 	purpose  int
 	coinType int
 
@@ -55,16 +56,16 @@ type tron struct {
 }
 
 // NewAccount create new account via mnemonic wallet by
-func (w *wallet) NewAccount(account, change, index uint32) (*tron, error) {
+func (w *wallet) NewAccount(account, change, index uint32) (*ethereumWallet, error) {
 	accKey, extendedKey, err := w.GetChildKey(Bip44Purpose,
-		TronCoinNumber, account, change, index)
+		EthCoinNumber, account, change, index)
 	if err != nil {
 		return nil, err
 	}
 
-	return &tron{
+	return &ethereumWallet{
 		purpose:          Bip44Purpose,
-		coinType:         TronCoinNumber,
+		coinType:         EthCoinNumber,
 		account:          account,
 		change:           change,
 		addressNumber:    index,
@@ -75,42 +76,41 @@ func (w *wallet) NewAccount(account, change, index uint32) (*tron, error) {
 }
 
 // GetAddress get address with 0x
-func (e *tron) GetAddress() (string, error) {
-	return pubKeyToTronAddress(*e.extendedKey.PublicECDSA), nil
+func (e *ethereumWallet) GetAddress() (string, error) {
+	return crypto.PubkeyToAddress(*e.extendedKey.PublicECDSA).Hex(), nil
 }
 
 // GetPubKey get key with 0x
-func (e *tron) GetPubKey() string {
-	return e.extendedKey.PublicHex()
+func (e *ethereumWallet) GetPubKey() string {
+	return "0x" + e.extendedKey.PublicHex()
 }
 
 // GetPrvKey get key with 0x
-func (e *tron) GetPrvKey() (string, error) {
-
-	return hex.EncodeToString(e.extendedKey.PrivateECDSA.D.Bytes()), nil
+func (e *ethereumWallet) GetPrvKey() (string, error) {
+	return "0x" + hex.EncodeToString(e.extendedKey.PrivateECDSA.D.Bytes()), nil
 }
 
 // GetPath ...
-func (e *tron) GetPath() string {
+func (e *ethereumWallet) GetPath() string {
 	return fmt.Sprintf("m/%d'/%d'/%d'/%d/%d",
 		e.GetPurpose(), e.GetCoinType(), e.account, e.change, e.addressNumber)
 }
 
 // GetPurpose ...
-func (e *tron) GetPurpose() int {
+func (e *ethereumWallet) GetPurpose() int {
 	return e.purpose
 }
 
 // GetCoinType ...
-func (e *tron) GetCoinType() int {
-	return TronCoinNumber
+func (e *ethereumWallet) GetCoinType() int {
+	return EthCoinNumber
 }
 
-func (e *tron) CloneECDSAPrivateKey() *ecdsa.PrivateKey {
+func (e *ethereumWallet) CloneECDSAPrivateKey() *ecdsa.PrivateKey {
 	return e.extendedKey.CloneECDSAPrivateKey()
 }
 
-func (e *tron) ClearSecrets() {
+func (e *ethereumWallet) ClearSecrets() {
 	e.accountKey.ExtendedKey.Zero()
 	e.accountKey.Public = ""
 	e.accountKey.Private = ""

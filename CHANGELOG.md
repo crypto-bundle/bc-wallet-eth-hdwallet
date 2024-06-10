@@ -1,5 +1,15 @@
 # Change Log
 
+## [v0.0.32] 09.06.2024
+### Added
+* Added proto description of Ethereum transaction types:
+  * LegacyTx
+  * DynamicFeeTx
+  * AccessListTx
+* Added proto marshaller from pbTransaction to go-ethereum Tx type
+### Changed
+* Changed data signature flow for three types of transactions - LegacyTx, DynamicFeeTx, AccessListTx. But DynamicFeeTx and AccessListTx temporary disabled
+
 ## [v0.0.31] 08.06.2024
 ### Changed
 * Merged code from bc-wallet-tron-hdwallet

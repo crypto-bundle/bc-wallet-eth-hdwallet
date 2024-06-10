@@ -42,7 +42,7 @@ import (
 	pbCommon "github.com/crypto-bundle/bc-wallet-common-hdwallet-controller/pkg/grpc/common"
 
 	"github.com/btcsuite/btcd/btcec/v2"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/core/types"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 )
@@ -68,7 +68,9 @@ func (e *addressData) ClonePrivateKey() *ecdsa.PrivateKey {
 type mnemonicWalletUnit struct {
 	mu *sync.Mutex
 
-	hdWalletSvc *wallet
+	hdWalletSvc           *wallet
+	signDataMarshallerSvc *signDataMarshaller
+	dataSigner            types.Signer
 
 	mnemonicWalletUUID string
 	mnemonicHash       string
@@ -143,6 +145,11 @@ func (u *mnemonicWalletUnit) SignData(ctx context.Context,
 		return nil, nil, err
 	}
 
+	txData, err := u.signDataMarshallerSvc.MarshallSignData(dataForSign)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	u.mu.Lock()
 	defer u.mu.Unlock()
 
@@ -150,30 +157,30 @@ func (u *mnemonicWalletUnit) SignData(ctx context.Context,
 		accIdentity.AccountIndex,
 		accIdentity.InternalIndex,
 		accIdentity.AddressIndex,
-		dataForSign)
+		txData)
 }
 
 func (u *mnemonicWalletUnit) signData(ctx context.Context,
 	account, change, index uint32,
-	dataForSign []byte,
+	txData types.TxData,
 ) (*string, []byte, error) {
 	addr, privKey, err := u.loadAccountDataByPath(ctx, account, change, index)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	//h256h := sha256.New()
-	//h256h.Write(dataForSign)
-	//hash := h256h.Sum(nil)
+	tx := types.NewTx(txData)
+	signedTx, err := types.SignTx(tx, u.dataSigner, privKey)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	hash := crypto.Keccak256Hash(dataForSign)
-
-	signedData, err := crypto.Sign(hash.Bytes(), privKey)
+	signedTxRawData, err := signedTx.MarshalBinary()
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to sign: %w", err)
 	}
 
-	return addr, signedData, nil
+	return addr, signedTxRawData, nil
 }
 
 func (u *mnemonicWalletUnit) LoadAccount(ctx context.Context,
@@ -382,10 +389,19 @@ func NewPoolUnit(walletUUID string,
 		return nil, createErr
 	}
 
+	var marshaller = marshallerSvc
+	if marshaller == nil {
+		marshaller = newMarshallerService()
+	}
+
+	signer := types.LatestSignerForChainID(big.NewInt(1))
+
 	return &mnemonicWalletUnit{
 		mu: &sync.Mutex{},
 
-		hdWalletSvc: hdWalletSvc,
+		hdWalletSvc:           hdWalletSvc,
+		signDataMarshallerSvc: marshaller,
+		dataSigner:            signer,
 
 		mnemonicWalletUUID: walletUUID,
 

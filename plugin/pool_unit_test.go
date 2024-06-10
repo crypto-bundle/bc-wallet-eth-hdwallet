@@ -640,7 +640,7 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 
 		recPubKey, recAddr, loopErr := extractECSDAPublicKey(tx)
 		if loopErr != nil {
-			t.Errorf("%s: %e", "unable to extract publick key and address", loopErr)
+			t.Fatalf("%s: %e", "unable to extract public key and address", loopErr)
 		}
 
 		sigPublicKeyECDSABytes := crypto.FromECDSAPub(recPubKey)

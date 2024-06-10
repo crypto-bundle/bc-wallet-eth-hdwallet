@@ -32,6 +32,15 @@
 
 package main
 
+import (
+	"fmt"
+	"math/big"
+	"strconv"
+	"sync"
+
+	"github.com/ethereum/go-ethereum/core/types"
+)
+
 const evmPluginName = "ethereum-hdwallet-plugin"
 
 // DO NOT EDIT THESE VARIABLES DIRECTLY. These are build-time constants
@@ -61,10 +70,43 @@ var (
 	// DO NOT EDIT THIS VARIABLE DIRECTLY. These are build-time constants
 	// DO NOT USE THESE VARIABLES IN APPLICATION CODE
 	BuildDateTS string = "1713280105"
+
+	// NetworkChainID - blockchain network ID, Ethereum blockchain mainnet id = 1
+	// https://chainlist.org/
+	// https://docs.expand.network/important-ids/chain-id
+	// https://chainid.network/chains.json - json format
+	// DO NOT EDIT THIS VARIABLE DIRECTLY. These are build-time constants
+	// DO NOT USE THESE VARIABLES IN APPLICATION CODE
+	NetworkChainID = "1"
+
+	// CoinType - registered coin type from BIP-0044 standard.
+	// Default value for Ethereum = 60, Ethereum Classic = 61, Binance Smart Chain = 9006, etc...
+	// See BIP-0044 - https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+	// But typically for all EVM blockchains use default Ethereum value = 60
+	// DO NOT EDIT THIS VARIABLE DIRECTLY. These are build-time constants
+	// DO NOT USE THESE VARIABLES IN APPLICATION CODE
+	CoinType = "60"
+)
+
+const (
+	EthereumMainNetChainID = 1
+)
+
+var (
+	pluginChainID  = EthereumMainNetChainID
+	pluginCoinType = EthCoinNumber
+	pluginSigner   types.Signer
+
+	setChainIDOnce  = sync.Once{}
+	setCoinTypeOnce = sync.Once{}
+	setSignerOnce   = sync.Once{}
 )
 
 func init() {
 	newMarshallerService()
+	prepareChainID()
+	prepareCoinType()
+	prepareSigner()
 }
 
 func GetPluginName() string {
@@ -89,4 +131,54 @@ func GetPluginBuildNumber() string {
 
 func GetPluginBuildDateTS() string {
 	return BuildDateTS
+}
+
+func prepareChainID() int {
+	setChainIDOnce.Do(func() {
+		if CoinType == "" {
+			pluginCoinType = EthereumMainNetChainID
+
+			return
+		}
+
+		chainIDInt, err := strconv.Atoi(NetworkChainID)
+		if err != nil {
+			panic(fmt.Errorf("wrong network chainID format: %w", err))
+		}
+
+		pluginChainID = chainIDInt
+
+		return
+	})
+
+	return pluginChainID
+}
+
+func prepareCoinType() int {
+	setCoinTypeOnce.Do(func() {
+		if CoinType == "" {
+			pluginCoinType = EthCoinNumber
+
+			return
+		}
+
+		coinTypeInt, err := strconv.Atoi(CoinType)
+		if err != nil {
+			panic(fmt.Errorf("wrong coin type format: %w", err))
+		}
+
+		pluginCoinType = coinTypeInt
+
+		return
+	})
+
+	return pluginCoinType
+}
+
+func prepareSigner() types.Signer {
+	setSignerOnce.Do(func() {
+		pluginSigner = types.LatestSignerForChainID(big.NewInt(int64(pluginChainID)))
+	})
+
+	return pluginSigner
 }

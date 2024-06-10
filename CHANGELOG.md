@@ -1,5 +1,17 @@
 # Change Log
 
+## [v0.0.33] 10.06.2024
+### Added
+* Added support of dynamic CoinType and ChainId values. Now you can build HdWallet plugin version for any EVM-like network
+* Added new plugin functions:
+  * GetChainID
+  * GetSupportedChainIDs
+* Added plugin init flow - for settlement pluginChainID and pluginCoinType variables
+  * Value of _pluginChainID_ variable depends on build-time variable _NetworkChainID_. Default value of pluginChainID - 1
+  * Value of _pluginCoinType_ variable depends on build-time variable _CoinType_. Default value of pluginChainID - 60
+### Changed
+* Added _**HDWALLET_CHAIN_ID**_ environment variable to helm-chart description
+
 ## [v0.0.32] 09.06.2024
 ### Added
 * Added proto description of Ethereum transaction types:

@@ -394,14 +394,13 @@ func NewPoolUnit(walletUUID string,
 		marshaller = newMarshallerService()
 	}
 
-	signer := types.LatestSignerForChainID(big.NewInt(1))
-
 	return &mnemonicWalletUnit{
 		mu: &sync.Mutex{},
 
 		hdWalletSvc:           hdWalletSvc,
 		signDataMarshallerSvc: marshaller,
-		dataSigner:            signer,
+
+		dataSigner: pluginSigner,
 
 		mnemonicWalletUUID: walletUUID,
 

@@ -15,6 +15,8 @@ build_proto:
 		./pkg/proto/*.proto
 
 build_plugin:
+	$(eval NETWORK_CHAIN_ID=$(or $(chainID),1))
+	$(eval HDWALLET_COIN_TYPE=$(or $(coinType),60))
 	$(eval SHORT_COMMIT_ID=$(shell git rev-parse --short HEAD))
 	$(eval COMMIT_ID=$(shell git rev-parse HEAD))
 	$(eval BUILD_NUMBER=0)
@@ -23,6 +25,8 @@ build_plugin:
 
 	CGO_ENABLED=1 go build -trimpath -race -installsuffix cgo -gcflags all=-N \
 		-ldflags "-linkmode external -extldflags -w -s \
+			-X 'main.NetworkChainID=${NETWORK_CHAIN_ID}' \
+			-X 'main.CoinType=${HDWALLET_COIN_TYPE}' \
 			-X 'main.BuildDateTS=${BUILD_DATE_TS}' \
 			-X 'main.BuildNumber=${BUILD_NUMBER}' \
 			-X 'main.ReleaseTag=${RELEASE_TAG}' \
@@ -51,6 +55,8 @@ deploy:
 	$(eval target_container_path=$(repository)/crypto-bundle/bc-wallet-ethereum-hdwallet-api)
 	$(eval context=$(or $(context),k0s-dev-cluster))
 	$(eval platform=$(or $(platform),linux/amd64))
+	$(eval NETWORK_CHAIN_ID=$(or $(chainID),1))
+	$(eval HDWALLET_COIN_TYPE=$(or $(coinType),60))
 
 	$(eval short_commit_id=$(shell git rev-parse --short HEAD))
 	$(eval commit_id=$(shell git rev-parse HEAD))
@@ -63,6 +69,8 @@ deploy:
 		--platform $(platform) \
 		--build-arg RACE= \
 		--build-arg PARENT_CONTAINER_IMAGE_NAME=$(parent_api_container_path):latest \
+		--build-arg NETWORK_CHAIN_ID=$(chainID) \
+		--build-arg HDWALLET_COIN_TYPE=$(coinType) \
 		--build-arg RELEASE_TAG=$(release_tag) \
 		--build-arg COMMIT_ID=$(commit_id) \
 		--build-arg SHORT_COMMIT_ID=$(short_commit_id) \
@@ -82,6 +90,7 @@ deploy:
 		--set "global.api.image.tag=$(build_tag)" \
 		--set "global.controller.image.path=$(controller_container_path)" \
 		--set "global.controller.image.tag=latest" \
+		--set "global.plugin.chain_id=$(coinType)" \
 		--set "global.env=$(env)" \
 		--values=./deploy/helm/hdwallet/values.yaml \
 		--values=./deploy/helm/hdwallet/values_$(env).yaml \

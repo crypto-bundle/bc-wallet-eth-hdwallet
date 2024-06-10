@@ -145,6 +145,11 @@ func (u *mnemonicWalletUnit) SignData(ctx context.Context,
 		return nil, nil, err
 	}
 
+	txData, err := u.signDataMarshallerSvc.MarshallSignData(dataForSign)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	u.mu.Lock()
 	defer u.mu.Unlock()
 
@@ -152,19 +157,14 @@ func (u *mnemonicWalletUnit) SignData(ctx context.Context,
 		accIdentity.AccountIndex,
 		accIdentity.InternalIndex,
 		accIdentity.AddressIndex,
-		dataForSign)
+		txData)
 }
 
 func (u *mnemonicWalletUnit) signData(ctx context.Context,
 	account, change, index uint32,
-	dataForSign []byte,
+	txData types.TxData,
 ) (*string, []byte, error) {
 	addr, privKey, err := u.loadAccountDataByPath(ctx, account, change, index)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	txData, err := u.signDataMarshallerSvc.MarshallSignData(dataForSign)
 	if err != nil {
 		return nil, nil, err
 	}

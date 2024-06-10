@@ -26,13 +26,63 @@ package main
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 var big8 = big.NewInt(8)
+
+func recoverPlain(sighash common.Hash,
+	R, S, Vb *big.Int,
+	homestead bool,
+) (*ecdsa.PublicKey, common.Address, error) {
+	if Vb.BitLen() > 8 {
+		return nil, common.Address{}, errors.New("invalidSign")
+	}
+
+	V := byte(Vb.Uint64() - 27)
+	if !crypto.ValidateSignatureValues(V, R, S, homestead) {
+		return nil, common.Address{}, errors.New("invalidSign")
+	}
+
+	// encode the signature in uncompressed format
+	r, s := R.Bytes(), S.Bytes()
+	sig := make([]byte, crypto.SignatureLength)
+	copy(sig[32-len(r):32], r)
+	copy(sig[64-len(s):64], s)
+	sig[64] = V
+
+	// DIRTY HACK
+	// https://stackoverflow.com/questions/49085737/geth-ecrecover-invalid-signature-recovery-id
+	// https://gist.github.com/dcb9/385631846097e1f59e3cba3b1d42f3ed#file-eth_sign_verify-go
+	if sig[crypto.RecoveryIDOffset] == 27 || sig[crypto.RecoveryIDOffset] == 28 {
+		sig[crypto.RecoveryIDOffset] -= 27 // Transform yellow paper V from 27/28 to 0/1
+	}
+
+	// recover the public key from the signature
+	pub, err := crypto.Ecrecover(sighash[:], sig)
+	if err != nil {
+		return nil, common.Address{}, err
+	}
+
+	if len(pub) == 0 || pub[0] != 4 {
+		return nil, common.Address{}, errors.New("invalid public key")
+	}
+
+	var addr common.Address
+	copy(addr[:], crypto.Keccak256(pub[1:])[12:])
+
+	ECDSAPub, err := crypto.UnmarshalPubkey(pub)
+	if err != nil {
+		return nil, common.Address{}, err
+	}
+
+	return ECDSAPub, addr, nil
+}
 
 func extractECSDAPublicKey(tx *types.Transaction) (*ecdsa.PublicKey, common.Address, error) {
 	V, R, S := tx.RawSignatureValues()

@@ -36,8 +36,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
-
 	"math/big"
 	"testing"
 
@@ -634,41 +632,16 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 
 		signed := bytes.Clone(signedData)
 
-		//h256h := sha256.New()
-		//h256h.Write(tCase.DataForSign)
-		//hash := h256h.Sum(nil)
-		//
-		//h256h.Reset()
-		//h256h = nil
-
 		tx := &types.Transaction{}
 		loopErr = tx.UnmarshalBinary(signed)
 		if loopErr != nil {
 			t.Fatalf("%s: %e", "unable to unmarshal tx data", loopErr)
 		}
-		//
-		//arr := func(sig []byte) (r, s, v *big.Int) {
-		//	if len(sig) != crypto.SignatureLength {
-		//		panic(fmt.Sprintf("wrong size for signature: got %d, want %d", len(sig), crypto.SignatureLength))
-		//	}
-		//	r = new(big.Int).SetBytes(sig[:32])
-		//	s = new(big.Int).SetBytes(sig[32:64])
-		//	v = new(big.Int).SetBytes([]byte{sig[64] + 27})
-		//	return r, s, v
-		//}
-
-		//hash := tx.Hash()
-		log.Print(tx.Hash().String())
 
 		recPubKey, recAddr, loopErr := extractECSDAPublicKey(tx)
 		if loopErr != nil {
 			t.Errorf("%s: %e", "unable to extract publick key and address", loopErr)
 		}
-
-		//sigPublicKeyECDSA, loopErr := crypto.SigToPub(hash.Bytes()[:], sig)
-		//if loopErr != nil {
-		//	t.Errorf("%s: %e", "unable to get public key from signed message", loopErr)
-		//}
 
 		sigPublicKeyECDSABytes := crypto.FromECDSAPub(recPubKey)
 		sigPublicKeyECDSAString := hexutil.Encode(sigPublicKeyECDSABytes)
@@ -676,16 +649,6 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 		if tCase.PublicKey != sigPublicKeyECDSAString {
 			t.Errorf("%s", "ethereumWallet pubKey not equal with expected")
 		}
-
-		//sigPublicKey, err := crypto.Ecrecover(hash.Bytes(), sig)
-		//if err != nil {
-		//	t.Error(err)
-		//}
-		//sigPubKeyString := hexutil.Encode(sigPublicKey)
-		//
-		//if tCase.PublicKey != sigPubKeyString {
-		//	t.Errorf("%s", "ethereumWallet pubKey not equal with expected")
-		//}
 
 		compressed := crypto.CompressPubkey(recPubKey)
 		compressedSigPublicKeyECDSAString := hexutil.Encode(compressed)

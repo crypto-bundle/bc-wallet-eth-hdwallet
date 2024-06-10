@@ -57,12 +57,12 @@ func (m *signDataMarshaller) MarshallSignData(dataForSign []byte) (types.TxData,
 	}
 
 	switch pbAny.TypeUrl {
-	case "ethereum.LegacyTxData":
+	case "type.googleapis.com/ethereum.LegacyTxData":
 		return m.marshallEthereumLegacyTx(pbAny)
-	case "ethereum.DynamicFeeTxData":
+	case "type.googleapis.com/ethereum.DynamicFeeTxData":
 		return nil, ErrUnsupportedDataType
 		//return m.marshallEthereumDynamicFeeTx(pbAny)
-	case "ethereum.AccessListTxData":
+	case "type.googleapis.com/ethereum.AccessListTxData":
 		return nil, ErrUnsupportedDataType
 		//return m.marshallEthereumAccessListTx(pbAny)
 	default:

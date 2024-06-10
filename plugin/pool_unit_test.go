@@ -37,14 +37,20 @@ import (
 	"context"
 	"fmt"
 	"log"
+
+	"math/big"
 	"testing"
 
 	pbCommon "github.com/crypto-bundle/bc-wallet-common-hdwallet-controller/pkg/grpc/common"
+	pbEthereum "github.com/crypto-bundle/bc-wallet-eth-hdwallet/pkg/proto"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 	"github.com/tyler-smith/go-bip39"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
@@ -493,7 +499,7 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 		CompressedPublicKey string
 		PublicKey           string
 
-		DataForSign []byte
+		DataForSign *pbEthereum.LegacyTxData
 
 		ExpectedAddress    string
 		ExpectedSignedData []byte
@@ -510,7 +516,15 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 				InternalIndex: 8,
 				AddressIndex:  9,
 			},
-			DataForSign: []byte{0x0, 0x2, 0x3, 0x4},
+			DataForSign: &pbEthereum.LegacyTxData{
+				Nonce:          0,
+				GasPrice:       big.NewInt(10000000000).Bytes(),
+				GasLimit:       14000,
+				ToAddress:      common.HexToAddress("0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8").Bytes(),
+				Value:          big.NewInt(1500000).Bytes(),
+				Data:           nil,
+				SignParameters: nil,
+			},
 
 			CompressedPublicKey: "0x030dbc0361bb42cedfce71de5bd969a573d952e23e44a905bd89d44e3b3b2bafb0",
 			PublicKey:           "0x040dbc0361bb42cedfce71de5bd969a573d952e23e44a905bd89d44e3b3b2bafb08142c1ace72356a45089dab3429746a68182c5398851b5baa835375560d2755b",
@@ -523,7 +537,15 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 				InternalIndex: 8008,
 				AddressIndex:  70007,
 			},
-			DataForSign: []byte{0x5, 0x6, 0x7, 0x8},
+			DataForSign: &pbEthereum.LegacyTxData{
+				Nonce:          12,
+				GasPrice:       big.NewInt(10000200000).Bytes(),
+				GasLimit:       15000,
+				ToAddress:      common.HexToAddress("0x40B38765696e3d5d8d9d834D8AaD4bB6e418E489").Bytes(),
+				Value:          big.NewInt(1900000).Bytes(),
+				Data:           []byte{0x1, 0x2, 0x3},
+				SignParameters: nil,
+			},
 
 			CompressedPublicKey: "0x0370cd063d2aa795777bd6111e8f0ab6bc062a91721dbf9018cba3ab0e7eb3d798",
 			PublicKey:           "0x0470cd063d2aa795777bd6111e8f0ab6bc062a91721dbf9018cba3ab0e7eb3d79868d853f137d5d4096b715a7d480590bde3ee6cd42beab9b638eeeec8ec1da08b",
@@ -538,7 +560,15 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 			},
 			CompressedPublicKey: "0x027465728e9c06c6c2da32e96159ae8e15ec1381baba99c7be2607dc6604594830",
 			PublicKey:           "0x047465728e9c06c6c2da32e96159ae8e15ec1381baba99c7be2607dc6604594830e58aa45697f4ff1dd1ea64780da8c2217a2b5ca0a6f35e47f58877d3ddc44938",
-			DataForSign:         []byte{0x9, 0x10, 0x11, 0x12},
+			DataForSign: &pbEthereum.LegacyTxData{
+				Nonce:          12,
+				GasPrice:       big.NewInt(10000200000).Bytes(),
+				GasLimit:       15000,
+				ToAddress:      common.HexToAddress("0x61EDCDf5bb737ADffE5043706e7C5bb1f1a56eEA").Bytes(),
+				Value:          big.NewInt(1900000).Bytes(),
+				Data:           []byte{0x9, 0x10, 0x11, 0x12},
+				SignParameters: nil,
+			},
 
 			ExpectedAddress: "0xdD4aE0268C7F6144bDb08C1dEC349bCe5f239E30",
 		},
@@ -558,7 +588,15 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 		accountIdentity := &anypb.Any{}
 		_ = accountIdentity.MarshalFrom(tCase.AddressPath)
 
-		addr, signedData, loopErr := poolUnit.SignData(context.Background(), accountIdentity, tCase.DataForSign)
+		signDataAny := &anypb.Any{}
+		_ = signDataAny.MarshalFrom(tCase.DataForSign)
+
+		signDataRaw, loopErr := proto.Marshal(signDataAny)
+		if loopErr != nil {
+			t.Fatalf("%s: %e", "unable to marshal proto signature proto message:", loopErr)
+		}
+
+		addr, signedData, loopErr := poolUnit.SignData(context.Background(), accountIdentity, signDataRaw)
 		if loopErr != nil {
 			t.Fatalf("%s: %e", "unable to sign data:", loopErr)
 		}
@@ -595,12 +633,6 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 		}
 
 		signed := bytes.Clone(signedData)
-		// DIRTY HACK
-		// https://stackoverflow.com/questions/49085737/geth-ecrecover-invalid-signature-recovery-id
-		// https://gist.github.com/dcb9/385631846097e1f59e3cba3b1d42f3ed#file-eth_sign_verify-go
-		if signed[crypto.RecoveryIDOffset] == 27 || signed[crypto.RecoveryIDOffset] == 28 {
-			signed[crypto.RecoveryIDOffset] -= 27 // Transform yellow paper V from 27/28 to 0/1
-		}
 
 		//h256h := sha256.New()
 		//h256h.Write(tCase.DataForSign)
@@ -609,43 +641,72 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 		//h256h.Reset()
 		//h256h = nil
 
-		hash := crypto.Keccak256Hash(tCase.DataForSign)
-		sigPublicKeyECDSA, loopErr := crypto.SigToPub(hash.Bytes(), signed)
+		tx := &types.Transaction{}
+		loopErr = tx.UnmarshalBinary(signed)
 		if loopErr != nil {
-			t.Fatalf("%s: %e", "unable to get public key from signed message", loopErr)
+			t.Fatalf("%s: %e", "unable to unmarshal tx data", loopErr)
 		}
-		sigPublicKeyECDSABytes := crypto.FromECDSAPub(sigPublicKeyECDSA)
+		//
+		//arr := func(sig []byte) (r, s, v *big.Int) {
+		//	if len(sig) != crypto.SignatureLength {
+		//		panic(fmt.Sprintf("wrong size for signature: got %d, want %d", len(sig), crypto.SignatureLength))
+		//	}
+		//	r = new(big.Int).SetBytes(sig[:32])
+		//	s = new(big.Int).SetBytes(sig[32:64])
+		//	v = new(big.Int).SetBytes([]byte{sig[64] + 27})
+		//	return r, s, v
+		//}
+
+		//hash := tx.Hash()
+		log.Print(tx.Hash().String())
+
+		recPubKey, recAddr, loopErr := extractECSDAPublicKey(tx)
+		if loopErr != nil {
+			t.Errorf("%s: %e", "unable to extract publick key and address", loopErr)
+		}
+
+		//sigPublicKeyECDSA, loopErr := crypto.SigToPub(hash.Bytes()[:], sig)
+		//if loopErr != nil {
+		//	t.Errorf("%s: %e", "unable to get public key from signed message", loopErr)
+		//}
+
+		sigPublicKeyECDSABytes := crypto.FromECDSAPub(recPubKey)
 		sigPublicKeyECDSAString := hexutil.Encode(sigPublicKeyECDSABytes)
 
 		if tCase.PublicKey != sigPublicKeyECDSAString {
-			t.Fatalf("%s", "ethereumWallet addr from pubKey not equal with expected")
+			t.Errorf("%s", "ethereumWallet pubKey not equal with expected")
 		}
 
-		sigPublicKey, err := crypto.Ecrecover(hash.Bytes(), signed)
-		if err != nil {
-			log.Fatal(err)
-		}
-		sigPubKeyString := hexutil.Encode(sigPublicKey)
+		//sigPublicKey, err := crypto.Ecrecover(hash.Bytes(), sig)
+		//if err != nil {
+		//	t.Error(err)
+		//}
+		//sigPubKeyString := hexutil.Encode(sigPublicKey)
+		//
+		//if tCase.PublicKey != sigPubKeyString {
+		//	t.Errorf("%s", "ethereumWallet pubKey not equal with expected")
+		//}
 
-		if tCase.PublicKey != sigPubKeyString {
-			t.Fatalf("%s", "ethereumWallet addr from pubKey not equal with expected")
-		}
-
-		compressed := crypto.CompressPubkey(sigPublicKeyECDSA)
+		compressed := crypto.CompressPubkey(recPubKey)
 		compressedSigPublicKeyECDSAString := hexutil.Encode(compressed)
 		if tCase.CompressedPublicKey != compressedSigPublicKeyECDSAString {
-			t.Fatalf("%s", "ethereumWallet addr from pubKey not equal with expected")
+			t.Errorf("%s", "ethereumWallet addr from pubKey not equal with expected")
 		}
 
-		ethAddr := crypto.PubkeyToAddress(*sigPublicKeyECDSA)
+		ethAddr := crypto.PubkeyToAddress(*recPubKey)
 		ethAddrStr := ethAddr.String()
 
+		recAddrString := recAddr.String()
+		if tCase.ExpectedAddress != recAddrString {
+			t.Errorf("%s", "ethereumWallet addr from pubKey not equal with expected")
+		}
+
 		if tCase.ExpectedAddress != ethAddrStr {
-			t.Fatalf("%s", "ethereumWallet addr from pubKey not equal with expected")
+			t.Errorf("%s", "ethereumWallet addr from pubKey not equal with expected")
 		}
 
 		if tCase.ExpectedAddress != *addr {
-			t.Fatalf("%s", "ethereumWallet addr from pubKey not equal with expected")
+			t.Errorf("%s", "ethereumWallet addr from pubKey not equal with expected")
 		}
 	}
 }

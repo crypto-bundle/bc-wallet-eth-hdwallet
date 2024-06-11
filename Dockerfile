@@ -30,6 +30,8 @@ COPY . .
 # Compile! Should only compile our sources since everything else is precompiled.
 ARG RACE=-race
 ARG CGO=1
+# NETWORK_NAME Default value - ethereum_main_net
+ARG NETWORK_NAME="ethereum_main_net"
 # NETWORK_CHAIN_ID - Default value 1 - Ethereum mainnet
 ARG NETWORK_CHAIN_ID=1
 # HDWALLET_COIN_TYPE - Default value 60 - Ethereum hdwallet coin type - BIP44 standart
@@ -45,6 +47,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     GOOS=linux CGO_ENABLED=${CGO} go build ${RACE} \
         -gcflags all=-N \
         -ldflags "-linkmode external -extldflags -w \
+            -X 'main.NetworkName=${NETWORK_NAME}' \
             -X 'main.NetworkChainID=${NETWORK_CHAIN_ID}' \
             -X 'main.CoinType=${HDWALLET_COIN_TYPE}' \
             -X 'main.BuildDateTS=${BUILD_DATE_TS}' \

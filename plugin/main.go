@@ -41,7 +41,10 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-const evmPluginName = "ethereum-hdwallet-plugin"
+const (
+	evmDefaultPluginName   = "ethereum-hdwallet-plugin"
+	ethereumMainNetChainID = 1
+)
 
 // DO NOT EDIT THESE VARIABLES DIRECTLY. These are build-time constants
 // DO NOT USE THESE VARIABLES IN APPLICATION CODE. USE commonConfig.NewLdFlagsManager SERVICE-COMPONENT INSTEAD OF IT
@@ -86,31 +89,36 @@ var (
 	// DO NOT EDIT THIS VARIABLE DIRECTLY. These are build-time constants
 	// DO NOT USE THESE VARIABLES IN APPLICATION CODE
 	CoinType = "60"
-)
 
-const (
-	EthereumMainNetChainID = 1
+	// NetworkName - name of the network for which the plugin was built.
+	// Default value Ethereum MainNet network name
+	// DO NOT EDIT THIS VARIABLE DIRECTLY. These are build-time constants
+	// DO NOT USE THESE VARIABLES IN APPLICATION CODE
+	NetworkName = evmDefaultPluginName
 )
 
 var (
-	pluginChainID  = EthereumMainNetChainID
+	pluginChainID  = ethereumMainNetChainID
 	pluginCoinType = EthCoinNumber
+	pluginName     = evmDefaultPluginName
 	pluginSigner   types.Signer
 
-	setChainIDOnce  = sync.Once{}
-	setCoinTypeOnce = sync.Once{}
-	setSignerOnce   = sync.Once{}
+	setChainIDOnce           = sync.Once{}
+	setCoinTypeOnce          = sync.Once{}
+	setSignerOnce            = sync.Once{}
+	setPluginNetworkNameOnce = sync.Once{}
 )
 
 func init() {
 	newMarshallerService()
+	preparePluginNetworkName()
 	prepareChainID()
 	prepareCoinType()
 	prepareSigner()
 }
 
 func GetPluginName() string {
-	return evmPluginName
+	return pluginName
 }
 
 func GetPluginReleaseTag() string {
@@ -133,10 +141,34 @@ func GetPluginBuildDateTS() string {
 	return BuildDateTS
 }
 
+func GetSupportedChainIDs() []int {
+	return []int{pluginChainID}
+}
+
+func GetChainID() int {
+	return pluginChainID
+}
+
+func preparePluginNetworkName() string {
+	setPluginNetworkNameOnce.Do(func() {
+		if NetworkName == "" {
+			pluginName = evmDefaultPluginName
+
+			return
+		}
+
+		pluginName = NetworkName
+
+		return
+	})
+
+	return pluginName
+}
+
 func prepareChainID() int {
 	setChainIDOnce.Do(func() {
 		if CoinType == "" {
-			pluginCoinType = EthereumMainNetChainID
+			pluginCoinType = ethereumMainNetChainID
 
 			return
 		}

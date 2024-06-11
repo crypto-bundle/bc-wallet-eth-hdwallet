@@ -76,6 +76,11 @@ License: MIT NON-AI
   value: {{ pluck .Values.global.env .Values.api.profiler.http_trace_path | first | default .Values.api.profiler.http_trace_path._default | quote }}
 {{- end }}
 
+- name: PROCESSING_PROVIDER
+  value: {{ pluck .Values.global.env .Values.common.provider | first | default .Values.common.provider._default | quote }}
+- name: PROCESSING_NETWORK
+  value: {{ pluck .Values.global.env .Values.common.network | first | default .Values.common.network._default | quote }}
+
 - name: HDWALLET_WORDS_COUNT
   value: {{ pluck .Values.global.env .Values.api.mnemonic.words_count | first | default .Values.api.mnemonic.words_count._default | quote }}
 - name: HDWALLET_CHAIN_ID

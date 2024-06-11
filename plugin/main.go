@@ -110,7 +110,6 @@ var (
 )
 
 func init() {
-	newMarshallerService()
 	preparePluginNetworkName()
 	prepareChainID()
 	prepareCoinType()

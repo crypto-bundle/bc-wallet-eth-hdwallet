@@ -68,9 +68,8 @@ func (e *addressData) ClonePrivateKey() *ecdsa.PrivateKey {
 type mnemonicWalletUnit struct {
 	mu *sync.Mutex
 
-	hdWalletSvc           *wallet
-	signDataMarshallerSvc *signDataMarshaller
-	dataSigner            types.Signer
+	hdWalletSvc *wallet
+	dataSigner  types.Signer
 
 	mnemonicWalletUUID string
 	mnemonicHash       string
@@ -145,7 +144,8 @@ func (u *mnemonicWalletUnit) SignData(ctx context.Context,
 		return nil, nil, err
 	}
 
-	txData, err := u.signDataMarshallerSvc.MarshallSignData(dataForSign)
+	tx := &types.Transaction{}
+	err = tx.UnmarshalBinary(dataForSign)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -157,20 +157,19 @@ func (u *mnemonicWalletUnit) SignData(ctx context.Context,
 		accIdentity.AccountIndex,
 		accIdentity.InternalIndex,
 		accIdentity.AddressIndex,
-		txData)
+		tx)
 }
 
 func (u *mnemonicWalletUnit) signData(ctx context.Context,
 	account, change, index uint32,
-	txData types.TxData,
+	txForSign *types.Transaction,
 ) (*string, []byte, error) {
 	addr, privKey, err := u.loadAccountDataByPath(ctx, account, change, index)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	tx := types.NewTx(txData)
-	signedTx, err := types.SignTx(tx, u.dataSigner, privKey)
+	signedTx, err := types.SignTx(txForSign, u.dataSigner, privKey)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -389,16 +388,10 @@ func NewPoolUnit(walletUUID string,
 		return nil, createErr
 	}
 
-	var marshaller = marshallerSvc
-	if marshaller == nil {
-		marshaller = newMarshallerService()
-	}
-
 	return &mnemonicWalletUnit{
 		mu: &sync.Mutex{},
 
-		hdWalletSvc:           hdWalletSvc,
-		signDataMarshallerSvc: marshaller,
+		hdWalletSvc: hdWalletSvc,
 
 		dataSigner: pluginSigner,
 

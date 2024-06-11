@@ -40,15 +40,12 @@ import (
 	"testing"
 
 	pbCommon "github.com/crypto-bundle/bc-wallet-common-hdwallet-controller/pkg/grpc/common"
-	pbEthereum "github.com/crypto-bundle/bc-wallet-eth-hdwallet/pkg/proto"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 	"github.com/tyler-smith/go-bip39"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
@@ -497,7 +494,7 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 		CompressedPublicKey string
 		PublicKey           string
 
-		DataForSign *pbEthereum.LegacyTxData
+		DataForSign types.TxData
 
 		ExpectedAddress    string
 		ExpectedSignedData []byte
@@ -506,6 +503,10 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 	// WARN: DO NOT USE THESE MNEMONICS IN MAINNET OR TESTNET. Usage only in unit-tests
 	// WARN: DO NOT USE THESE MNEMONICS IN MAINNET OR TESTNET. Usage only in unit-tests
 	// WARN: DO NOT USE THESE MNEMONICS IN MAINNET OR TESTNET. Usage only in unit-tests
+	addrPtr := func(a common.Address) *common.Address {
+		return &a
+	}
+
 	testCases := []*testCase{
 		{
 			Mnemonic: "unknown valid carbon hat echo funny artist letter desk absorb unit fatigue foil skirt stay case path rescue hawk remember aware arch regular cry",
@@ -514,14 +515,13 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 				InternalIndex: 8,
 				AddressIndex:  9,
 			},
-			DataForSign: &pbEthereum.LegacyTxData{
-				Nonce:          0,
-				GasPrice:       big.NewInt(10000000000).Bytes(),
-				GasLimit:       14000,
-				ToAddress:      common.HexToAddress("0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8").Bytes(),
-				Value:          big.NewInt(1500000).Bytes(),
-				Data:           nil,
-				SignParameters: nil,
+			DataForSign: &types.LegacyTx{
+				Nonce:    0,
+				GasPrice: big.NewInt(10000000000),
+				Gas:      14000,
+				To:       addrPtr(common.HexToAddress("0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8")),
+				Value:    big.NewInt(1500000),
+				Data:     nil,
 			},
 
 			CompressedPublicKey: "0x030dbc0361bb42cedfce71de5bd969a573d952e23e44a905bd89d44e3b3b2bafb0",
@@ -535,14 +535,13 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 				InternalIndex: 8008,
 				AddressIndex:  70007,
 			},
-			DataForSign: &pbEthereum.LegacyTxData{
-				Nonce:          12,
-				GasPrice:       big.NewInt(10000200000).Bytes(),
-				GasLimit:       15000,
-				ToAddress:      common.HexToAddress("0x40B38765696e3d5d8d9d834D8AaD4bB6e418E489").Bytes(),
-				Value:          big.NewInt(1900000).Bytes(),
-				Data:           []byte{0x1, 0x2, 0x3},
-				SignParameters: nil,
+			DataForSign: &types.LegacyTx{
+				Nonce:    12,
+				GasPrice: big.NewInt(10000200000),
+				Gas:      15000,
+				To:       addrPtr(common.HexToAddress("0x40B38765696e3d5d8d9d834D8AaD4bB6e418E489")),
+				Value:    big.NewInt(1900000),
+				Data:     []byte{0x1, 0x2, 0x3},
 			},
 
 			CompressedPublicKey: "0x0370cd063d2aa795777bd6111e8f0ab6bc062a91721dbf9018cba3ab0e7eb3d798",
@@ -558,14 +557,13 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 			},
 			CompressedPublicKey: "0x027465728e9c06c6c2da32e96159ae8e15ec1381baba99c7be2607dc6604594830",
 			PublicKey:           "0x047465728e9c06c6c2da32e96159ae8e15ec1381baba99c7be2607dc6604594830e58aa45697f4ff1dd1ea64780da8c2217a2b5ca0a6f35e47f58877d3ddc44938",
-			DataForSign: &pbEthereum.LegacyTxData{
-				Nonce:          12,
-				GasPrice:       big.NewInt(10000200000).Bytes(),
-				GasLimit:       15000,
-				ToAddress:      common.HexToAddress("0x61EDCDf5bb737ADffE5043706e7C5bb1f1a56eEA").Bytes(),
-				Value:          big.NewInt(1900000).Bytes(),
-				Data:           []byte{0x9, 0x10, 0x11, 0x12},
-				SignParameters: nil,
+			DataForSign: &types.LegacyTx{
+				Nonce:    12,
+				GasPrice: big.NewInt(10000200000),
+				Gas:      15000,
+				To:       addrPtr(common.HexToAddress("0x61EDCDf5bb737ADffE5043706e7C5bb1f1a56eEA")),
+				Value:    big.NewInt(1900000),
+				Data:     []byte{0x9, 0x10, 0x11, 0x12},
 			},
 
 			ExpectedAddress: "0xdD4aE0268C7F6144bDb08C1dEC349bCe5f239E30",
@@ -586,15 +584,13 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 		accountIdentity := &anypb.Any{}
 		_ = accountIdentity.MarshalFrom(tCase.AddressPath)
 
-		signDataAny := &anypb.Any{}
-		_ = signDataAny.MarshalFrom(tCase.DataForSign)
-
-		signDataRaw, loopErr := proto.Marshal(signDataAny)
-		if loopErr != nil {
-			t.Fatalf("%s: %e", "unable to marshal proto signature proto message:", loopErr)
+		tx := types.NewTx(tCase.DataForSign)
+		binaryData, err := tx.MarshalBinary()
+		if !ok {
+			t.Fatalf("%s: %s", "unable to marshal binary data", err)
 		}
 
-		addr, signedData, loopErr := poolUnit.SignData(context.Background(), accountIdentity, signDataRaw)
+		addr, signedData, loopErr := poolUnit.SignData(context.Background(), accountIdentity, binaryData)
 		if loopErr != nil {
 			t.Fatalf("%s: %e", "unable to sign data:", loopErr)
 		}
@@ -632,13 +628,13 @@ func TestMnemonicWalletUnit_SignData(t *testing.T) {
 
 		signed := bytes.Clone(signedData)
 
-		tx := &types.Transaction{}
-		loopErr = tx.UnmarshalBinary(signed)
+		signedTx := &types.Transaction{}
+		loopErr = signedTx.UnmarshalBinary(signed)
 		if loopErr != nil {
 			t.Fatalf("%s: %e", "unable to unmarshal tx data", loopErr)
 		}
 
-		recPubKey, recAddr, loopErr := extractECSDAPublicKey(tx)
+		recPubKey, recAddr, loopErr := extractECSDAPublicKey(signedTx)
 		if loopErr != nil {
 			t.Fatalf("%s: %e", "unable to extract public key and address", loopErr)
 		}

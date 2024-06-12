@@ -2,7 +2,7 @@
 
 ## Description
 
-Implementation of **Hierarchical Deterministic Wallet** for EVM-like blockhains.
+Implementation of **Hierarchical Deterministic Wallet** for EVM-like blockchains.
 
 Plugin support all EVM-like blockchains. All you need it set right values of ```NetworkChainID``` 
 and ```CoinType``` variables. The plugin has 2 ways to set the desired variable values:
@@ -43,7 +43,21 @@ Example of usage hd-wallet pool_unit you can see in [plugin/pool_unit_test.go](p
 Example of plugin integration in [cmd/loader_test/main.go](cmd/loader_test/main.go) file.
 
 ### Build
-Plugin support build-time variables injecting. For example:
+Plugin support build-time variables injecting. Supported variables:
+* `NetworkName` - plugin blockchain name. ethereum, polygon, bsc. You can set any value to this variable, it does not affect on plugin behavior
+* `NetworkChainID` - blockchain network ID, Ethereum blockchain MainNet id = 1, You can set any value,
+  but if you want to get right plugin behavior - you must select one ChainID value from EVM chain list.
+  You can see available chains on [chainlist.org](https://chainlist.org/), [chainid.network](https://chainid.network/) or in another sources.
+* `CoinType` - HdWallet coin type. Default value for Ethereum = 60, Ethereum Classic = 61, Binance Smart Chain = 9006, etc.
+  See BIP-0044 - https://github.com/satoshilabs/slips/blob/master/slip-0044.md.
+  But typically all EVM-like blockchain use Ethereum coin type  = 60.
+* `ReleaseTag` - release tag in TAG.SHORT_COMMIT_ID.BUILD_NUMBER format.
+* `CommitID` - latest GIT commit id.
+* `ShortCommitID` - first 12 characters from CommitID.
+* `BuildNumber` - ci/cd build number for BuildNumber
+* `BuildDateTS` - ci/cd build date in time stamp
+
+Build example:
 ```bash
 RACE=-race CGO_ENABLED=1 go build -trimpath ${RACE} -installsuffix cgo -gcflags all=-N \
 		-ldflags "-linkmode external -extldflags -w -s \
@@ -60,18 +74,12 @@ RACE=-race CGO_ENABLED=1 go build -trimpath ${RACE} -installsuffix cgo -gcflags 
 		./plugin
 ```
 
-* **_NetworkName_** - plugin blockchain name. ethereum, polygon, bsc. You can set any value to this variable, it does not affect on plugin behavior
-* **_NetworkChainID_** - blockchain network ID, Ethereum blockchain MainNet id = 1, You can set any value, 
-but if you want to get right plugin behavior - you must select one ChainID value from EVM chain list. 
-You can see available chains on [chainlist.org](https://chainlist.org/), [chainid.network](https://chainid.network/) or in another sources.
-* **_CoinType_** - HdWallet coin type. Default value for Ethereum = 60, Ethereum Classic = 61, Binance Smart Chain = 9006, etc.
-See BIP-0044 - https://github.com/satoshilabs/slips/blob/master/slip-0044.md. 
-But typically all EVM-like blockchain use Ethereum coin type  = 60. 
-* **_ReleaseTag_** - release tag in TAG.SHORT_COMMIT_ID.BUILD_NUMBER format.
-* **_CommitID_** - latest GIT commit id.
-* **_ShortCommitID_** - first 12 characters from CommitID.
-* **_BuildNumber_** - ci/cd build number for BuildNumber
-* **_BuildDateTS_** - ci/cd build date in time stamp
+
+* `ReleaseTag` - release tag in TAG.SHORT_COMMIT_ID.BUILD_NUMBER format.
+* `CommitID` - latest GIT commit id.
+* `ShortCommitID` - first 12 characters from CommitID.
+* `BuildNumber` - ci/cd build number for BuildNumber
+* `BuildDateTS` - ci/cd build date in time stamp
 
 ## Deployment
 
@@ -79,7 +87,7 @@ Currently, support only kubernetes deployment flow via Helm
 
 ### Kubernetes
 Application must be deployed as part of bc-wallet-<BLOCKCHAIN_NAME>-hdwallet bundle.
-bc-wallet-ethereum-hdwallet-api application must be started as single container in Kubernetes Pod with shared volume.
+**_bc-wallet-ethereum-hdwallet-api_** application must be started as single container in Kubernetes Pod with shared volume.
 
 You can see example of HELM-chart deployment application in next repositories:
 * [deploy/helm/hdwallet](deploy/helm/hdwallet)

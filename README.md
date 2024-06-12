@@ -74,13 +74,6 @@ RACE=-race CGO_ENABLED=1 go build -trimpath ${RACE} -installsuffix cgo -gcflags 
 		./plugin
 ```
 
-
-* `ReleaseTag` - release tag in TAG.SHORT_COMMIT_ID.BUILD_NUMBER format.
-* `CommitID` - latest GIT commit id.
-* `ShortCommitID` - first 12 characters from CommitID.
-* `BuildNumber` - ci/cd build number for BuildNumber
-* `BuildDateTS` - ci/cd build date in time stamp
-
 ## Deployment
 
 Currently, support only kubernetes deployment flow via Helm

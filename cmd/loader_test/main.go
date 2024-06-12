@@ -66,7 +66,8 @@ type walletPoolUnitService interface {
 }
 
 const (
-	ethereumMainNetChainID = 1
+	ethereumMainNetCoinType = 60
+	ethereumMainNetChainID  = 1
 
 	getPluginNameSymbol          = "GetPluginName"
 	getPluginReleaseTagSymbol    = "GetPluginReleaseTag"
@@ -75,8 +76,13 @@ const (
 	getPluginBuildNumberSymbol   = "GetPluginBuildNumber"
 	getPluginBuildDateTSSymbol   = "GetPluginBuildDateTS"
 
-	pluginGetChainIDSymbol           = "GetChainID"
-	pluginGetSupportedChainIDsSymbol = "GetSupportedChainIDs"
+	pluginGetChainIDSymbol               = "GetChainID"
+	pluginGetSupportedChainIDsInfoSymbol = "GetSupportedChainIDsInfo"
+	pluginSetChainIDSymbol               = "SetChainID"
+
+	pluginGetCoinTypeSymbol               = "GetHdWalletCoinType"
+	pluginGetSupportedCoinTypesInfoSymbol = "GetSupportedCoinTypesInfo"
+	pluginSetCoinTypeSymbol               = "SetHdWalletCoinType"
 
 	pluginGenerateMnemonicSymbol = "GenerateMnemonic"
 	pluginValidateMnemonicSymbol = "ValidateMnemonic"
@@ -109,6 +115,11 @@ func main() {
 
 	runGetChainIdTest(p)
 	runGetSupportedChainIDsTest(p)
+	runSetChainIdTest(p)
+
+	runGetCoinTypeTest(p)
+	runGetSupportedCoinTypesInfoTest(p)
+	runSetCoinTypeTest(p)
 
 	runGetCommitIDTest(p)
 	runGetShortCommitIDTest(p)
@@ -163,6 +174,103 @@ func runReleaseTagTest(p *plugin.Plugin) {
 	log.Printf("--- PASS: %s\n", getPluginReleaseTagSymbol)
 }
 
+func runGetCoinTypeTest(p *plugin.Plugin) {
+	log.Printf("=== RUN: %s\n", pluginGetCoinTypeSymbol)
+
+	pluginGetCoinTypeFuncSymbol, err := p.Lookup(pluginGetCoinTypeSymbol)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	getCoinTypeFunc, ok := pluginGetCoinTypeFuncSymbol.(func() int)
+	if !ok {
+		log.Fatalf("%s: %s", "unable to cast plugin symbol", pluginGetCoinTypeSymbol)
+	}
+
+	currentCoinType := getCoinTypeFunc()
+	if currentCoinType <= 0 {
+		log.Fatalf("%s - current: %d", "wrong chainID value", currentCoinType)
+	}
+
+	log.Printf("--- PASS: %s\n", pluginGetCoinTypeSymbol)
+}
+
+func runGetSupportedCoinTypesInfoTest(p *plugin.Plugin) {
+	log.Printf("=== RUN: %s\n", pluginGetSupportedCoinTypesInfoSymbol)
+
+	supportedCoinIDsPluginFuncSymbol, err := p.Lookup(pluginGetSupportedCoinTypesInfoSymbol)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	getSupportedChainIDsFunc, ok := supportedCoinIDsPluginFuncSymbol.(func() string)
+	if !ok {
+		log.Fatalf("%s: %s", "unable to cast plugin symbol", pluginGetSupportedCoinTypesInfoSymbol)
+	}
+
+	chainIDList := getSupportedChainIDsFunc()
+	if len(chainIDList) == 0 {
+		log.Fatalf("%s: %d", "empty supported coinID info", len(chainIDList))
+	}
+
+	log.Printf("--- PASS: %s\n", pluginGetSupportedCoinTypesInfoSymbol)
+}
+
+func runSetCoinTypeTest(p *plugin.Plugin) {
+	log.Printf("=== RUN: %s\n", pluginSetCoinTypeSymbol)
+
+	pluginSetCoinTypeFuncSymbol, err := p.Lookup(pluginSetCoinTypeSymbol)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	setCoinTypeFunc, ok := pluginSetCoinTypeFuncSymbol.(func(int) error)
+	if !ok {
+		log.Fatalf("%s: %s", "unable to cast plugin symbol", pluginSetCoinTypeSymbol)
+	}
+
+	err = setCoinTypeFunc(ethereumMainNetCoinType)
+	if err != nil {
+		log.Fatalf("--- FAIL: %s, unable to set chainID - expected: %d. Error: %s", pluginSetCoinTypeSymbol,
+			ethereumMainNetCoinType, err)
+	}
+
+	err = setCoinTypeFunc(ethereumMainNetCoinType + 1)
+	if err != nil {
+		log.Printf("--- INFO: %s, unable to set coinType second time. Its OK. Error: %s",
+			pluginSetCoinTypeSymbol, err)
+	}
+
+	log.Printf("--- PASS: %s\n", pluginSetCoinTypeSymbol)
+}
+
+func runSetChainIdTest(p *plugin.Plugin) {
+	log.Printf("=== RUN: %s\n", pluginSetChainIDSymbol)
+
+	pluginSetChainIDFuncSymbol, err := p.Lookup(pluginSetChainIDSymbol)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	setChainIDFunc, ok := pluginSetChainIDFuncSymbol.(func(int) error)
+	if !ok {
+		log.Fatalf("%s: %s", "unable to cast plugin symbol", pluginSetChainIDSymbol)
+	}
+
+	err = setChainIDFunc(ethereumMainNetChainID)
+	if err != nil {
+		log.Fatalf("%s - expected: %d %d", "unable to set chainID", 199)
+	}
+
+	err = setChainIDFunc(ethereumMainNetChainID + 1)
+	if err != nil {
+		log.Printf("--- INFO: %s, unable to set chainID second time. Its OK. Error: %s",
+			pluginSetCoinTypeSymbol, err)
+	}
+
+	log.Printf("--- PASS: %s\n", pluginSetChainIDSymbol)
+}
+
 func runGetChainIdTest(p *plugin.Plugin) {
 	log.Printf("=== RUN: %s\n", pluginGetChainIDSymbol)
 
@@ -186,16 +294,16 @@ func runGetChainIdTest(p *plugin.Plugin) {
 }
 
 func runGetSupportedChainIDsTest(p *plugin.Plugin) {
-	log.Printf("=== RUN: %s\n", pluginGetSupportedChainIDsSymbol)
+	log.Printf("=== RUN: %s\n", pluginGetSupportedChainIDsInfoSymbol)
 
-	supportedCoinIDsPluginFuncSymbol, err := p.Lookup(pluginGetSupportedChainIDsSymbol)
+	supportedCoinIDsPluginFuncSymbol, err := p.Lookup(pluginGetSupportedChainIDsInfoSymbol)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	getSupportedChainIDsFunc, ok := supportedCoinIDsPluginFuncSymbol.(func() []int)
+	getSupportedChainIDsFunc, ok := supportedCoinIDsPluginFuncSymbol.(func() string)
 	if !ok {
-		log.Fatalf("%s: %s", "unable to cast plugin symbol", pluginGetSupportedChainIDsSymbol)
+		log.Fatalf("%s: %s", "unable to cast plugin symbol", pluginGetSupportedChainIDsInfoSymbol)
 	}
 
 	chainIDList := getSupportedChainIDsFunc()
@@ -203,7 +311,7 @@ func runGetSupportedChainIDsTest(p *plugin.Plugin) {
 		log.Fatalf("%s: %d", "empty supported coinID list", len(chainIDList))
 	}
 
-	log.Printf("--- PASS: %s\n", pluginGetSupportedChainIDsSymbol)
+	log.Printf("--- PASS: %s\n", pluginGetSupportedChainIDsInfoSymbol)
 }
 
 func runGetCommitIDTest(p *plugin.Plugin) {

@@ -82,11 +82,13 @@ License: MIT NON-AI
   value: {{ pluck .Values.global.env .Values.common.network | first | default .Values.common.network._default | quote }}
 
 - name: HDWALLET_WORDS_COUNT
-  value: {{ pluck .Values.global.env .Values.api.mnemonic.words_count | first | default .Values.api.mnemonic.words_count._default | quote }}
+  value: {{ pluck .Values.global.env .Values.api.hdwallet.words_count | first | default .Values.api.hdwallet.words_count._default | quote }}
 - name: HDWALLET_CHAIN_ID
-  value: {{ .Values.global.plugin.chain_id | quote }}
+  value: {{ pluck .Values.global.env .Values.api.hdwallet.chain_id | first | default .Values.api.hdwallet.chain_id._default | quote }}
+- name: HDWALLET_COIN_TYPE
+  value: {{ pluck .Values.global.env .Values.api.hdwallet.coin_type | first | default .Values.api.hdwallet.coin_type._default | quote }}
 - name: HDWALLET_PLUGIN_PATH
-  value: {{ pluck .Values.global.env .Values.api.mnemonic.plugin_path | first | default .Values.api.mnemonic.plugin_path._default | quote }}
+  value: {{ pluck .Values.global.env .Values.api.hdwallet.plugin_path | first | default .Values.api.hdwallet.plugin_path._default | quote }}
 - name: HDWALLET_UNIX_SOCKET_DIR_PATH
   value: {{ pluck .Values.global.env .Values.common.unix_socket.dir_path | first | default .Values.common.unix_socket.dir_path._default | quote }}
 - name: HDWALLET_UNIX_SOCKET_FILE_TEMPLATE

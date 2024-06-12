@@ -392,10 +392,16 @@ api:
     http_trace_path:
       _default: /debug/pprof/trace
 
-  mnemonic:
+  hdwallet:
     words_count:
       _default: 24
       production: 24
+
+    chain_id:
+      _default: 1
+
+    coin_type:
+      _default: 60
 
     plugin_path:
       _default: /usr/local/lib/hdwallet_plugin_ethereum.so

@@ -103,7 +103,7 @@ func (e *ethereumWallet) GetPurpose() int {
 
 // GetCoinType ...
 func (e *ethereumWallet) GetCoinType() int {
-	return EthCoinNumber
+	return ethereumCoinNumber
 }
 
 func (e *ethereumWallet) CloneECDSAPrivateKey() *ecdsa.PrivateKey {

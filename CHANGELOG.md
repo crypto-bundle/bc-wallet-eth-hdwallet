@@ -1,6 +1,6 @@
 # Change Log
 
-## [v0.0.33] 11.06.2024
+## [v0.0.33] 12.06.2024
 ### Added
 * Added support of dynamic CoinType and ChainId values. Now you can build HdWallet plugin version for any EVM-like network
 * Added new plugin functions:

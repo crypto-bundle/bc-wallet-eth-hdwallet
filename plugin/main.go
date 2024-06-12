@@ -33,6 +33,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -99,14 +100,18 @@ var (
 
 var (
 	pluginChainID  = ethereumMainNetChainID
-	pluginCoinType = EthCoinNumber
+	pluginCoinType = ethereumCoinNumber
 	pluginName     = evmDefaultPluginName
 	pluginSigner   types.Signer
 
+	prepareChainIDOnce       = sync.Once{}
 	setChainIDOnce           = sync.Once{}
+	prepareCoinTypeOnce      = sync.Once{}
 	setCoinTypeOnce          = sync.Once{}
 	setSignerOnce            = sync.Once{}
 	setPluginNetworkNameOnce = sync.Once{}
+
+	ErrPluginValueAlreadySet = errors.New("plugin value already set.You can do it only once")
 )
 
 func init() {
@@ -140,12 +145,32 @@ func GetPluginBuildDateTS() string {
 	return BuildDateTS
 }
 
-func GetSupportedChainIDs() []int {
-	return []int{pluginChainID}
-}
-
 func GetChainID() int {
 	return pluginChainID
+}
+
+func GetSupportedChainIDsInfo() string {
+	return "Plugin support all EVM-like blockchains.\n" +
+		"All you need it set right values of NetworkChainID variable.\n" +
+		"Please reade README.md file for getting information about available flows"
+}
+
+func SetChainID(chainID int) error {
+	return setChainID(chainID)
+}
+
+func GetSupportedCoinTypesInfo() string {
+	return "Plugin support all EVM-like blockchains.\n" +
+		"All you need it set right values of CoinType variables.\n" +
+		"Please reade README.md file for getting information about available flows"
+}
+
+func GetHdWalletCoinType() int {
+	return pluginCoinType
+}
+
+func SetHdWalletCoinType(coinType int) error {
+	return setHdWalletCoinType(coinType)
 }
 
 func preparePluginNetworkName() string {
@@ -164,9 +189,33 @@ func preparePluginNetworkName() string {
 	return pluginName
 }
 
-func prepareChainID() int {
+func setChainID(chainID int) error {
+	var err = fmt.Errorf("%w: %s", ErrPluginValueAlreadySet, "pluginChainID")
 	setChainIDOnce.Do(func() {
-		if CoinType == "" {
+		pluginChainID = chainID
+		err = nil
+
+		return
+	})
+
+	return err
+}
+
+func setHdWalletCoinType(coinType int) error {
+	var err = fmt.Errorf("%w: %s", ErrPluginValueAlreadySet, "pluginCoinType")
+	setCoinTypeOnce.Do(func() {
+		pluginCoinType = coinType
+		err = nil
+
+		return
+	})
+
+	return err
+}
+
+func prepareChainID() int {
+	prepareChainIDOnce.Do(func() {
+		if NetworkChainID == "" {
 			pluginCoinType = ethereumMainNetChainID
 
 			return
@@ -174,7 +223,7 @@ func prepareChainID() int {
 
 		chainIDInt, err := strconv.Atoi(NetworkChainID)
 		if err != nil {
-			panic(fmt.Errorf("wrong network chainID format: %w", err))
+			panic(fmt.Errorf("wrong chain id type format: %w", err))
 		}
 
 		pluginChainID = chainIDInt
@@ -186,9 +235,9 @@ func prepareChainID() int {
 }
 
 func prepareCoinType() int {
-	setCoinTypeOnce.Do(func() {
+	prepareCoinTypeOnce.Do(func() {
 		if CoinType == "" {
-			pluginCoinType = EthCoinNumber
+			pluginCoinType = ethereumCoinNumber
 
 			return
 		}

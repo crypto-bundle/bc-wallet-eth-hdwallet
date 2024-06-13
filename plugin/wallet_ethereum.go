@@ -58,14 +58,14 @@ type ethereumWallet struct {
 // NewAccount create new account via mnemonic wallet by
 func (w *wallet) NewAccount(account, change, index uint32) (*ethereumWallet, error) {
 	accKey, extendedKey, err := w.GetChildKey(Bip44Purpose,
-		EthCoinNumber, account, change, index)
+		uint32(pluginCoinType), account, change, index)
 	if err != nil {
 		return nil, err
 	}
 
 	return &ethereumWallet{
 		purpose:          Bip44Purpose,
-		coinType:         EthCoinNumber,
+		coinType:         pluginCoinType,
 		account:          account,
 		change:           change,
 		addressNumber:    index,
@@ -103,7 +103,7 @@ func (e *ethereumWallet) GetPurpose() int {
 
 // GetCoinType ...
 func (e *ethereumWallet) GetCoinType() int {
-	return EthCoinNumber
+	return ethereumCoinNumber
 }
 
 func (e *ethereumWallet) CloneECDSAPrivateKey() *ecdsa.PrivateKey {

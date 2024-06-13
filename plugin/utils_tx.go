@@ -86,41 +86,43 @@ func recoverPlain(sighash common.Hash,
 
 func extractECSDAPublicKey(tx *types.Transaction) (*ecdsa.PublicKey, common.Address, error) {
 	V, R, S := tx.RawSignatureValues()
+	var signer types.Signer = nil
 
 	switch tx.Type() {
 	case types.LegacyTxType:
 		chaiIDMul := new(big.Int).Mul(tx.ChainId(), big.NewInt(2))
-		V = new(big.Int).Sub(V, chaiIDMul)
-		V.Sub(V, big8)
+		v := new(big.Int).Sub(V, chaiIDMul)
+		V = v.Sub(v, big8)
 
-		signer := types.NewEIP155Signer(tx.ChainId())
+		signer = types.NewEIP155Signer(tx.ChainId())
 
-		return recoverPlain(signer.Hash(tx), R, S, V, true)
 	case types.AccessListTxType:
 		// AL txs are defined to use 0 and 1 as their recovery
 		// id, add 27 to become equivalent to unprotected Homestead signatures.
 		V = new(big.Int).Add(V, big.NewInt(27))
 
-		return recoverPlain(tx.Hash(), R, S, V, true)
+		signer = types.NewEIP2930Signer(tx.ChainId())
 
 	case types.DynamicFeeTxType:
 		// DynamicFee txs are defined to use 0 and 1 as their recovery
 		// id, add 27 to become equivalent to unprotected Homestead signatures.
 		V = new(big.Int).Add(V, big.NewInt(27))
 
-		return recoverPlain(tx.Hash(), R, S, V, true)
+		signer = types.NewLondonSigner(tx.ChainId())
 
 	case types.BlobTxType:
 		// Blob txs are defined to use 0 and 1 as their recovery
 		// id, add 27 to become equivalent to unprotected Homestead signatures.
 		V = new(big.Int).Add(V, big.NewInt(27))
 
-		return recoverPlain(tx.Hash(), R, S, V, true)
+		signer = types.NewCancunSigner(tx.ChainId())
 	default:
 		// Blob txs are defined to use 0 and 1 as their recovery
 		// id, add 27 to become equivalent to unprotected Homestead signatures.
 		V = new(big.Int).Add(V, big.NewInt(27))
 
-		return recoverPlain(tx.Hash(), R, S, V, true)
+		signer = types.LatestSignerForChainID(tx.ChainId())
 	}
+
+	return recoverPlain(signer.Hash(tx), R, S, V, true)
 }

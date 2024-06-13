@@ -15,6 +15,9 @@ build_proto:
 		./pkg/proto/*.proto
 
 build_plugin:
+	$(eval NETWORK_NAME=$(or $(networkName),"ethereum"))
+	$(eval NETWORK_CHAIN_ID=$(or $(chainID),1))
+	$(eval HDWALLET_COIN_TYPE=$(or $(coinType),60))
 	$(eval SHORT_COMMIT_ID=$(shell git rev-parse --short HEAD))
 	$(eval COMMIT_ID=$(shell git rev-parse HEAD))
 	$(eval BUILD_NUMBER=0)
@@ -23,6 +26,9 @@ build_plugin:
 
 	CGO_ENABLED=1 go build -trimpath -race -installsuffix cgo -gcflags all=-N \
 		-ldflags "-linkmode external -extldflags -w -s \
+			-X 'main.NetworkName=${NETWORK_NAME}' \
+			-X 'main.NetworkChainID=${NETWORK_CHAIN_ID}' \
+			-X 'main.CoinType=${HDWALLET_COIN_TYPE}' \
 			-X 'main.BuildDateTS=${BUILD_DATE_TS}' \
 			-X 'main.BuildNumber=${BUILD_NUMBER}' \
 			-X 'main.ReleaseTag=${RELEASE_TAG}' \
@@ -45,6 +51,9 @@ deploy:
 	$(if $(and $(env),$(repository)),,$(error 'env' and/or 'repository' is not defined))
 
 	$(eval build_tag=$(env)-$(shell git rev-parse --short HEAD)-$(shell date +%s))
+	$(eval NETWORK_CHAIN_ID=$(or $(chainID),1))
+	$(eval HDWALLET_COIN_TYPE=$(or $(coinType),60))
+	$(eval NETWORK_NAME=$(or $(networkName),"ethereum"))
 	$(eval migrator_container_path=$(repository)/crypto-bundle/bc-wallet-common-hdwallet-migrator)
 	$(eval controller_container_path=$(repository)/crypto-bundle/bc-wallet-common-hdwallet-controller)
 	$(eval parent_api_container_path=$(repository)/crypto-bundle/bc-wallet-common-hdwallet-api)
@@ -63,6 +72,9 @@ deploy:
 		--platform $(platform) \
 		--build-arg RACE= \
 		--build-arg PARENT_CONTAINER_IMAGE_NAME=$(parent_api_container_path):latest \
+		--build-arg NETWORK_NAME=$(NETWORK_NAME) \
+		--build-arg NETWORK_CHAIN_ID=$(NETWORK_CHAIN_ID) \
+		--build-arg HDWALLET_COIN_TYPE=$(HDWALLET_COIN_TYPE) \
 		--build-arg RELEASE_TAG=$(release_tag) \
 		--build-arg COMMIT_ID=$(commit_id) \
 		--build-arg SHORT_COMMIT_ID=$(short_commit_id) \
@@ -75,14 +87,17 @@ deploy:
 	docker push $(target_container_path):latest
 
 	helm --kube-context $(context) upgrade \
-		--install bc-wallet-ethereum-hdwallet \
+		--install bc-wallet-$(NETWORK_NAME)-hdwallet \
 		--set "global.migrator.image.path=$(migrator_container_path)" \
 		--set "global.migrator.image.tag=latest" \
 		--set "global.api.image.path=$(target_container_path)" \
 		--set "global.api.image.tag=$(build_tag)" \
 		--set "global.controller.image.path=$(controller_container_path)" \
 		--set "global.controller.image.tag=latest" \
+		--set "global.plugin.chain_id=$(coinType)" \
 		--set "global.env=$(env)" \
+		--set "common.network._default=$(NETWORK_NAME)" \
+		--set "common.nameOverride=bc-wallet-$(NETWORK_NAME)-hdwallet" \
 		--values=./deploy/helm/hdwallet/values.yaml \
 		--values=./deploy/helm/hdwallet/values_$(env).yaml \
 		./deploy/helm/hdwallet

@@ -15,11 +15,17 @@ description: A Helm chart for Kubernetes
 # pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: application
 keywords:
+  - blockchain
   - hdwallet
   - hierarchical deterministic wallet
-  - ethereum
-  - blockchain
   - signature
+  - ethereum
+  - binance smart chain
+  - arbitrum one
+  - polygon
+  - base
+  - avalanche
+  - evm
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.

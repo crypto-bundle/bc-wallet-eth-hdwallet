@@ -33,7 +33,7 @@ spec:
       securityContext:
         {{- toYaml .Values.common.podSecurityContext | nindent 8 }}
       volumes:
-        - name: {{ .Chart.Name }}-shared-socket-data
+        - name: {{ include "app.name" . }}-shared-socket-data
           emptyDir: {}
       {{- with .Values.common.nodeSelector }}
       nodeSelector:
@@ -51,7 +51,7 @@ spec:
       {{- end }}
 
       initContainers:
-        - name: {{ .Chart.Name }}-migrator
+        - name: {{ include "app.name" . }}-migrator
           image: {{ .Values.global.migrator.image.path }}:{{ .Values.global.migrator.image.tag }}
           imagePullPolicy: {{ .Values.migrator.image.pullPolicy }}
           securityContext:
@@ -70,7 +70,7 @@ spec:
             - "up"
 
       containers:
-        - name: {{ .Chart.Name }}-controller
+        - name: {{ include "app.name" . }}-controller
           securityContext:
             {{- toYaml .Values.common.securityContext | nindent 12 }}
           image: {{ .Values.global.controller.image.path }}:{{ .Values.global.controller.image.tag }}
@@ -90,7 +90,7 @@ spec:
           resources:
             {{- toYaml .Values.common.resources | nindent 12 }}
           volumeMounts:
-            - name: {{ .Chart.Name }}-shared-socket-data
+            - name: {{ include "app.name" . }}-shared-socket-data
               mountPath: {{ pluck .Values.global.env .Values.common.unix_socket.dir_path | first | default .Values.common.unix_socket.dir_path._default }}
           env:
     {{ include "_env_common" . | nindent 12 }}
@@ -119,7 +119,7 @@ spec:
       {{- end }}
       {{- end }}
 
-        - name: {{ .Chart.Name }}-api
+        - name: {{ include "app.name" . }}-api
           securityContext:
             {{- toYaml .Values.common.securityContext | nindent 12 }}
           image: {{ .Values.global.api.image.path }}:{{ .Values.global.api.image.tag }}
@@ -134,7 +134,7 @@ spec:
           resources:
             {{- toYaml .Values.common.resources | nindent 12 }}
           volumeMounts:
-            - name: {{ .Chart.Name }}-shared-socket-data
+            - name: {{ include "app.name" . }}-shared-socket-data
               mountPath: {{ pluck .Values.global.env .Values.common.unix_socket.dir_path | first | default .Values.common.unix_socket.dir_path._default }}
           env:
   {{ include "_env_common" . | nindent 12 }}

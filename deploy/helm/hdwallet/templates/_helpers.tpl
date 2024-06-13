@@ -7,7 +7,7 @@ License: MIT NON-AI
 Expand the name of the chart.
 */}}
 {{- define "app.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- default .Chart.Name .Values.common.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -16,10 +16,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "app.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- if .Values.common.fullnameOverride }}
+{{- .Values.common.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- $name := default .Chart.Name .Values.common.nameOverride }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -60,7 +60,7 @@ Create the name of the service account to use
 */}}
 {{- define "app.serviceAccountName" -}}
 {{- if .Values.common.serviceAccount.create }}
-{{- default (include "app.fullname" .) .Values.common.serviceAccount.name }}
+{{- include "app.fullname" . }}
 {{- else }}
 {{- default "default" .Values.common.serviceAccount.name }}
 {{- end }}

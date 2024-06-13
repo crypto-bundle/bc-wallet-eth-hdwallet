@@ -41,13 +41,9 @@ import (
 )
 
 const (
-	Bip49Purpose   = 49
-	Bip44Purpose   = 44
-	DefaultPurpose = Bip49Purpose
+	Bip44Purpose = 44
 
-	BtcCoinNumber = 0
-
-	EthCoinNumber = 60
+	ethereumCoinNumber = 60
 )
 
 // wallet contains the individual mnemonic and seed

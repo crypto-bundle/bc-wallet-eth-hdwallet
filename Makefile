@@ -15,7 +15,7 @@ build_proto:
 		./pkg/proto/*.proto
 
 build_plugin:
-	$(eval NETWORK_NAME=$(or $(networkName),"ethereum_main_net"))
+	$(eval NETWORK_NAME=$(or $(networkName),"ethereum"))
 	$(eval NETWORK_CHAIN_ID=$(or $(chainID),1))
 	$(eval HDWALLET_COIN_TYPE=$(or $(coinType),60))
 	$(eval SHORT_COMMIT_ID=$(shell git rev-parse --short HEAD))
@@ -67,28 +67,26 @@ deploy:
 	$(eval build_date=$(shell date +%s))
 	$(eval release_tag=$(shell git describe --tags $(commit_id))-$(short_commit_id)-$(build_number))
 
-#	docker build \
-#		--ssh default=$(SSH_AUTH_SOCK) \
-#		--platform $(platform) \
-#		--build-arg RACE= \
-#		--build-arg PARENT_CONTAINER_IMAGE_NAME=$(parent_api_container_path):latest \
-#		--build-arg NETWORK_NAME=$(NETWORK_NAME) \
-#		--build-arg NETWORK_CHAIN_ID=$(NETWORK_CHAIN_ID) \
-#		--build-arg HDWALLET_COIN_TYPE=$(HDWALLET_COIN_TYPE) \
-#		--build-arg RELEASE_TAG=$(release_tag) \
-#		--build-arg COMMIT_ID=$(commit_id) \
-#		--build-arg SHORT_COMMIT_ID=$(short_commit_id) \
-#		--build-arg BUILD_NUMBER=$(build_number) \
-#		--build-arg BUILD_DATE_TS=$(build_date) \
-#		--tag $(target_container_path):$(build_tag) \
-#		--tag $(target_container_path):latest .
+	docker build \
+		--ssh default=$(SSH_AUTH_SOCK) \
+		--platform $(platform) \
+		--build-arg RACE= \
+		--build-arg PARENT_CONTAINER_IMAGE_NAME=$(parent_api_container_path):latest \
+		--build-arg NETWORK_NAME=$(NETWORK_NAME) \
+		--build-arg NETWORK_CHAIN_ID=$(NETWORK_CHAIN_ID) \
+		--build-arg HDWALLET_COIN_TYPE=$(HDWALLET_COIN_TYPE) \
+		--build-arg RELEASE_TAG=$(release_tag) \
+		--build-arg COMMIT_ID=$(commit_id) \
+		--build-arg SHORT_COMMIT_ID=$(short_commit_id) \
+		--build-arg BUILD_NUMBER=$(build_number) \
+		--build-arg BUILD_DATE_TS=$(build_date) \
+		--tag $(target_container_path):$(build_tag) \
+		--tag $(target_container_path):latest .
 
-#	docker push $(target_container_path):$(build_tag)
-#	docker push $(target_container_path):latest
+	docker push $(target_container_path):$(build_tag)
+	docker push $(target_container_path):latest
 
-		# --install bc-wallet-$(NETWORK_NAME)-hdwallet \
-
-	helm --kube-context $(context) upgrade --dry-run --debug \
+	helm --kube-context $(context) upgrade \
 		--install bc-wallet-$(NETWORK_NAME)-hdwallet \
 		--set "global.migrator.image.path=$(migrator_container_path)" \
 		--set "global.migrator.image.tag=latest" \
@@ -102,6 +100,6 @@ deploy:
 		--set "common.nameOverride=bc-wallet-$(NETWORK_NAME)-hdwallet" \
 		--values=./deploy/helm/hdwallet/values.yaml \
 		--values=./deploy/helm/hdwallet/values_$(env).yaml \
-		./deploy/helm/hdwallet > ./build/helm_chart.yaml
+		./deploy/helm/hdwallet
 
 .PHONY: hdwallet_proto deploy

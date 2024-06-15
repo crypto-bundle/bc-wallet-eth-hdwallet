@@ -25,3 +25,6 @@ build/*
 
 deploy/k8s_secrets/*.yaml
 deploy/helm/*/values_local.yaml
+deploy/helm/*/charts
+deploy/trrfrm/*/.terraform/*
+deploy/trrfrm/*/.terraform.lock.hcl

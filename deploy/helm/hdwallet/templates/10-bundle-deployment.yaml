@@ -1,5 +1,5 @@
 {{- /*
-Copyright (c) 2022-2024 Aleksei Kotelnikov(gudron2s@gmail.com)
+Copyright (c) 2022-2025 Aleksei Kotelnikov(gudron2s@gmail.com)
 License: MIT NON-AI
 */}}
 
@@ -49,26 +49,6 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-
-      initContainers:
-        - name: {{ include "app.name" . }}-migrator
-          image: {{ .Values.global.migrator.image.path }}:{{ .Values.global.migrator.image.tag }}
-          imagePullPolicy: {{ .Values.migrator.image.pullPolicy }}
-          securityContext:
-            {{- toYaml .Values.common.securityContext | nindent 12 }}
-          resources:
-            {{- toYaml .Values.common.resources | nindent 12 }}
-          env:
-            {{ include "_env_common" . | nindent 12 }}
-            {{ include "_env_vault" . | nindent 12 }}
-            {{ include "_env_store" . | nindent 12 }}
-            {{ include "_env_app_migrator" . | nindent 12 }}
-          command: [ "/opt/appworker/migrator" ]
-          args:
-            - "-dir"
-            - {{ .Values.migrator.migration_dir }}
-            - "up"
-
       containers:
         - name: {{ include "app.name" . }}-controller
           securityContext:
@@ -82,21 +62,21 @@ spec:
             - name: cntrlr-wapi
               containerPort: {{ pluck .Values.global.env .Values.controller.grpc_port.wallet_api | first | default .Values.controller.grpc_port.wallet_api._default }}
               protocol: TCP
-          {{ if pluck .Values.global.env .Values.controller.profiler.enabled | first | default .Values.controller.profiler.enabled._default }}
+          {{- if pluck .Values.global.env .Values.controller.profiler.enabled | first | default .Values.controller.profiler.enabled._default }}
             - name: cntrlr-profiler
               containerPort: {{ pluck .Values.global.env .Values.controller.profiler.port | first | default .Values.controller.profiler.port._default }}
               protocol: TCP
-          {{ end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.common.resources | nindent 12 }}
           volumeMounts:
             - name: {{ include "app.name" . }}-shared-socket-data
               mountPath: {{ pluck .Values.global.env .Values.common.unix_socket.dir_path | first | default .Values.common.unix_socket.dir_path._default }}
           env:
-    {{ include "_env_common" . | nindent 12 }}
-    {{ include "_env_vault" . | nindent 12 }}
-    {{ include "_env_store" . | nindent 12 }}
-    {{ include "_env_app_controller" . | nindent 12 }}
+    {{- include "_env_common" . | nindent 12 -}}
+    {{- include "_env_vault" . | nindent 12 -}}
+    {{- include "_env_store" . | nindent 12 -}}
+    {{- include "_env_app_controller" . | nindent 12 -}}
 
       {{- if pluck  .Values.global.env .Values.controller.startupProbe.enabled | first | default .Values.controller.startupProbe.enabled._default }}
       {{- with .Values.controller.startupProbe.podSettings }}
@@ -124,22 +104,21 @@ spec:
             {{- toYaml .Values.common.securityContext | nindent 12 }}
           image: {{ .Values.global.api.image.path }}:{{ .Values.global.api.image.tag }}
           imagePullPolicy: {{ .Values.api.image.pullPolicy }}
-          {{ if pluck .Values.global.env .Values.api.profiler.enabled | first | default .Values.api.profiler.enabled._default }}
+          {{- if pluck .Values.global.env .Values.api.profiler.enabled | first | default .Values.api.profiler.enabled._default }}
           ports:
             - name: api-profiler
               containerPort: {{ pluck .Values.global.env .Values.api.profiler.port | first | default .Values.api.profiler.port._default }}
               protocol: TCP
-          {{ end }}
-
+          {{- end }}
           resources:
             {{- toYaml .Values.common.resources | nindent 12 }}
           volumeMounts:
             - name: {{ include "app.name" . }}-shared-socket-data
               mountPath: {{ pluck .Values.global.env .Values.common.unix_socket.dir_path | first | default .Values.common.unix_socket.dir_path._default }}
           env:
-  {{ include "_env_common" . | nindent 12 }}
-  {{ include "_env_vault" . | nindent 12 }}
-  {{ include "_env_app_api" . | nindent 12 }}
+  {{- include "_env_common" . | nindent 12 -}}
+  {{- include "_env_vault" . | nindent 12 -}}
+  {{- include "_env_app_api" . | nindent 12 -}}
 
         {{- if pluck .Values.global.env .Values.api.startupProbe.enabled | first | default .Values.api.startupProbe.enabled._default }}
         {{- with .Values.api.startupProbe.podSettings }}

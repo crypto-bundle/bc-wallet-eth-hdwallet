@@ -1,5 +1,5 @@
 {{- /*
-Copyright (c) 2022-2024 Aleksei Kotelnikov(gudron2s@gmail.com)
+Copyright (c) 2022-2025 Aleksei Kotelnikov(gudron2s@gmail.com)
 License: MIT NON-AI
 */}}
 
@@ -15,23 +15,21 @@ spec:
       targetPort: {{ pluck .Values.global.env .Values.controller.grpc_port.manager_api | first | default .Values.controller.grpc_port.manager_api._default }}
       protocol: TCP
       name: cntrlr-mapi
-
     - port: {{ pluck .Values.global.env .Values.controller.grpc_port.wallet_api | first | default .Values.controller.grpc_port.wallet_api._default }}
       targetPort: {{ pluck .Values.global.env .Values.controller.grpc_port.wallet_api | first | default .Values.controller.grpc_port.wallet_api._default }}
       protocol: TCP
       name: cntrlr-wapi
-
-  {{ if pluck .Values.global.env .Values.controller.profiler.enabled | first | default .Values.controller.profiler.enabled._default }}
+  {{- if pluck .Values.global.env .Values.controller.profiler.enabled | first | default .Values.controller.profiler.enabled._default }}
     - port: {{ pluck .Values.global.env .Values.controller.profiler.port | first | default .Values.controller.profiler.port._default }}
       targetPort: {{ pluck .Values.global.env .Values.controller.profiler.port | first | default .Values.controller.profiler.port._default }}
       protocol: TCP
       name: cntrlr-profiler
-  {{ end }}
-  {{ if pluck .Values.global.env .Values.api.profiler.enabled | first | default .Values.api.profiler.enabled._default }}
+  {{- end }}
+  {{- if pluck .Values.global.env .Values.api.profiler.enabled | first | default .Values.api.profiler.enabled._default }}
     - port: {{ pluck .Values.global.env .Values.api.profiler.port | first | default .Values.api.profiler.port._default }}
       targetPort: {{ pluck .Values.global.env .Values.api.profiler.port | first | default .Values.api.profiler.port._default }}
       protocol: TCP
       name: api-profiler
-  {{ end }}
+  {{- end }}
   selector:
-    {{- include "app.selectorLabels" . | nindent 4 }}
+    {{- include "app.selectorLabels" . | nindent 4 -}}

@@ -1,5 +1,5 @@
 {{/*
-Copyright (c) 2022-2024 Aleksei Kotelnikov(gudron2s@gmail.com)
+Copyright (c) 2022-2025 Aleksei Kotelnikov(gudron2s@gmail.com)
 License: MIT NON-AI
 */}}
 
@@ -60,8 +60,6 @@ Create the name of the service account to use
 */}}
 {{- define "app.serviceAccountName" -}}
 {{- if .Values.common.serviceAccount.create }}
-{{- include "app.fullname" . }}
-{{- else }}
 {{- default "default" .Values.common.serviceAccount.name }}
 {{- end }}
 {{- end }}

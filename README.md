@@ -74,6 +74,15 @@ RACE=-race CGO_ENABLED=1 go build -trimpath ${RACE} -installsuffix cgo -gcflags 
 		./plugin
 ```
 
+Build plugin loader test example:
+```bash
+RACE=-race CGO_ENABLED=1 go build -trimpath -race -trimpath -installsuffix cgo \
+		-gcflags all=-N \
+		-o ./build/loader_test \
+		-ldflags "-linkmode external -extldflags -w -s" \
+		./cmd/loader_test
+```
+
 ## Deployment
 
 Currently, support only kubernetes deployment flow via Helm

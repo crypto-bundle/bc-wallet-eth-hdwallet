@@ -41,7 +41,17 @@ common:
   nameOverride: "bc-wallet-ethereum-hdwallet"
   fullnameOverride: ""
 
-  podAnnotations: {}
+  podAnnotations:
+    vault.hashicorp.com/agent-inject: 'true'
+    vault.hashicorp.com/role: 'bc-wallet-ethereum-hdwallet-app-auth-role'
+    vault.hashicorp.com/agent-pre-populate-only: 'true'
+    vault.hashicorp.com/agent-inject-token: 'true'
+    vault.hashicorp.com/agent-run-as-user: '1000'
+    vault.hashicorp.com/agent-inject-secret-access.token: 'kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/vault/app'
+    vault.hashicorp.com/agent-inject-template-access.token: |
+      {{- with secret "kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/vault/app" -}}
+      {{- .Data.data.VAULT_AUTH_TOKEN -}}
+      {{- end -}}
 
   podSecurityContext: {}
   # fsGroup: 2000
@@ -115,6 +125,13 @@ common:
         _default: /path/to-/token
       role:
         _default: vault-client
+
+    token_auth:
+      role:
+        _default: bc-wallet-ethereum-hdwallet-ro-role
+
+      token_path:
+        _default: kv/crypto-bundle/bc-wallet-common/vault
 
   db:
     host:
@@ -194,7 +211,17 @@ common:
       production:
         - nats://nats.default.svc.cluster.local:4222
 
-migrator:
+bc-wallet-common-trrfrmr-worker:
+  terraformer:
+    nameOverride: "bc-wallet-ethereum-hdwallet-trrfrm"
+    fullnameOverride: "bc-wallet-ethereum-hdwallet-trrfrm"
+
+    jobAnnotations:
+      "helm.sh/hook": pre-install,pre-upgrade
+      "helm.sh/hook-weight": "-100"
+      "helm.sh/hook-delete-policy": hook-succeeded
+
+mgrtr:
   image:
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
@@ -204,10 +231,25 @@ migrator:
   migration_dir: /opt/bc-wallet-common-migrator/migrations
 
   vault:
+    agent:
+      inject_secret_path: 'kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/mgrtr'
+
+      inject_template: |
+        {{- with secret "kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/mgrtr" -}}
+        POSTGRESQL_USERNAME="{{ .Data.data.POSTGRESQL_PASSWORD }}"
+        POSTGRESQL_PASSWORD="{{ .Data.data.POSTGRESQL_USERNAME }}"
+        {{- end -}}
+
+    renew_ttl:
+      _default: 0
+
+    token_path:
+      _default: /vault/secrets/token
+
     data_path:
       _default:
         - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/common
-        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/migrator
+        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/mgrtr
 
 controller:
   image:
@@ -217,6 +259,12 @@ controller:
     tag: latest
 
   vault:
+    token_path:
+      _default: /vault/secrets/token
+
+    renew_ttl:
+      _default: 0
+
     data_path:
       _default:
         - kv/data/crypto-bundle/bc-wallet-common/jwt
@@ -319,11 +367,16 @@ api:
     tag: latest
 
   vault:
+    token_path:
+      _default: /vault/secrets/token
+
+    renew_ttl:
+      _default: 0
+
     data_path:
       _default:
         - kv/data/crypto-bundle/bc-wallet-common/transit
         - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/common
-        - kv/data/crypto-bundle/bc-wallet-ethereum-hdwallet/api
 
   startupProbe:
     enabled:

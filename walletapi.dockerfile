@@ -31,7 +31,7 @@ COPY . .
 ARG RACE=-race
 ARG CGO=1
 # NETWORK_NAME Default value - ethereum_main_net
-ARG NETWORK_NAME="ethereum_main_net"
+ARG NETWORK_NAME="ethereum"
 # NETWORK_CHAIN_ID - Default value 1 - Ethereum mainnet
 ARG NETWORK_CHAIN_ID=1
 # HDWALLET_COIN_TYPE - Default value 60 - Ethereum hdwallet coin type - BIP44 standart

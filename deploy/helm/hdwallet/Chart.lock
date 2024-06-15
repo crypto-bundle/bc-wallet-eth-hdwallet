@@ -1,0 +1,6 @@
+dependencies:
+- name: bc-wallet-common-trrfrmr-worker
+  repository: file://../../../../bc-wallet-common-trrfrm/deploy/helm/worker
+  version: 0.0.2
+digest: sha256:ecc0a7cf904f06ea0f83a0ff0c456afe208d99247d9fcc108e7057d501ee6921
+generated: "2024-07-03T16:17:30.676958+04:00"

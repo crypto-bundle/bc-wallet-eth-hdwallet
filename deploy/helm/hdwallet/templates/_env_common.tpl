@@ -1,5 +1,5 @@
 {{/*
-Copyright (c) 2022-2024 Aleksei Kotelnikov(gudron2s@gmail.com)
+Copyright (c) 2022-2025 Aleksei Kotelnikov(gudron2s@gmail.com)
 License: MIT NON-AI
 */}}
 
@@ -19,10 +19,10 @@ License: MIT NON-AI
 - name: GOMEMLIMIT
   valueFrom:
     resourceFieldRef:
-      resource: limits.memory
+      resource: common.resources.limits.memory
 
 - name: GOMAXPROCS
   valueFrom:
     resourceFieldRef:
-      resource: limits.cpu
+      resource: common.resources.limits.cpu
 {{ end }}

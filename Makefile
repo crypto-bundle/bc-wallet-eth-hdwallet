@@ -1,19 +1,5 @@
 default: build_plugin
 
-build_proto:
-	protoc -I ./pkg/proto/ \
-		--go_out=./pkg/proto \
-		--go_opt=paths=source_relative \
-		--go-grpc_out=./pkg/proto \
-		--go-grpc_opt=paths=source_relative \
-		--openapiv2_out=logtostderr=true:./pkg/proto/ \
-		--grpc-gateway_out=./pkg/proto \
-		--grpc-gateway_opt=logtostderr=true \
-		--grpc-gateway_opt=paths=source_relative \
-		--doc_out=./pkg/proto/ \
-		--doc_opt=markdown,$@.md \
-		./pkg/proto/*.proto
-
 build_plugin:
 	$(eval NETWORK_NAME=$(or $(networkName),"ethereum"))
 	$(eval NETWORK_CHAIN_ID=$(or $(chainID),1))
@@ -46,6 +32,90 @@ test_plugin:
 		./cmd/loader_test
 
 	./build/loader_test
+
+tes:
+	$(eval NETWORK_NAME=$(or $(networkName),"ethereum"))
+  $(eval VAULT_TOKEN=$(or $(vaultToken),"<token_here>"))
+	$(eval target_hdwallet_name=bc-wallet-$(NETWORK_NAME)-hdwallet)
+
+	VAULT_ADDR=http://localhost:8200 \
+	VAULT_TOKEN=$(VAULT_TOKEN) \
+	PGPASSWORD=password \
+	PGUSER=postgres \
+	PGDATABASE=bc-wallet-common-trrfrm \
+	PGHOST=localhost \
+	PGSSLMODE=disable \
+	PGPORT=5434 \
+	PG_SCHEMA_NAME=bc-wallet-$(NETWORK_NAME)-hdwallet \
+	terraform -chdir=deploy/trrfrm/hdwallet apply -var="network=$(NETWORK_NAME)"
+
+tes_init:
+	$(eval NETWORK_NAME=$(or $(networkName),"ethereum"))
+  $(eval VAULT_TOKEN=$(or $(vaultToken),"<token_here>"))
+	$(eval target_hdwallet_name=bc-wallet-$(NETWORK_NAME)-hdwallet)
+
+	VAULT_ADDR=http://localhost:8200 \
+	VAULT_TOKEN=$(VAULT_TOKEN) \
+	PGUSER=postgres \
+	PGDATABASE=bc-wallet-common-trrfrm \
+	PGPASSWORD=password \
+	PGHOST=localhost \
+	PGSSLMODE=disable \
+	PGPORT=5434 \
+	PG_SCHEMA_NAME=bc-wallet-$(NETWORK_NAME)-hdwallet \
+	terraform -chdir=deploy/trrfrm/hdwallet init -reconfigure -var="network=$(NETWORK_NAME)" \
+		-var="k8s_auth_role_name=$(target_hdwallet_name)-auth-role"
+
+trrfrm_apply:
+  $(eval VAULT_TOKEN=$(or $(vaultToken),"<token_here>"))
+
+	VAULT_ADDR=http://localhost:8200 \
+	VAULT_TOKEN=$(VAULT_TOKEN) \
+	PGUSER=postgres \
+	PGDATABASE=bc-wallet-common-trrfrm \
+	PGPASSWORD=password \
+	PGHOST=localhost \
+	PGSSLMODE=disable \
+	PGPORT=5434 \
+	PG_SCHEMA_NAME=bc-wallet-common-trrfrm \
+	terraform -chdir=deploy/trrfrm/common apply
+
+trrfrm_init:
+  $(eval VAULT_TOKEN=$(or $(vaultToken),"<token_here>"))
+
+	VAULT_ADDR=http://localhost:8200 \
+	VAULT_TOKEN=$(VAULT_TOKEN) \
+	PGUSER=postgres \
+	PGDATABASE=bc-wallet-common-trrfrm \
+	PGPASSWORD=password \
+	PGHOST=localhost \
+	PGSSLMODE=disable \
+	PGPORT=5434 \
+	PG_SCHEMA_NAME=bc-wallet-common-trrfrm \
+	terraform -chdir=deploy/trrfrm/common init -reconfigure
+
+build_trrfrm:
+	$(if $(and $(env),$(repository)),,$(error 'env' and/or 'repository' is not defined))
+
+	$(eval build_tag=$(env)-$(shell git rev-parse --short HEAD)-$(shell date +%s))
+	$(eval NETWORK_CHAIN_ID=$(or $(chainID),1))
+	$(eval HDWALLET_COIN_TYPE=$(or $(coinType),60))
+	$(eval NETWORK_NAME=$(or $(networkName),"ethereum"))
+	$(eval parent_container_path=hashicorp/terraform:latest)
+	$(eval target_container_path=$(repository)/crypto-bundle/bc-wallet-common-hdwallet-trrfrmr)
+	$(eval context=$(or $(context),k0s-dev-cluster))
+	$(eval platform=$(or $(platform),linux/amd64))
+
+	docker build \
+		--ssh default=$(SSH_AUTH_SOCK) \
+		--platform $(platform) \
+		--build-arg PARENT_CONTAINER_IMAGE_NAME=$(parent_container_path) \
+		--tag $(target_container_path):$(build_tag) \
+		--tag $(target_container_path):latest \
+		-f terraform.dockerfile .
+
+	docker push $(target_container_path):$(build_tag)
+	docker push $(target_container_path):latest
 
 deploy:
 	$(if $(and $(env),$(repository)),,$(error 'env' and/or 'repository' is not defined))
@@ -81,13 +151,15 @@ deploy:
 		--build-arg BUILD_NUMBER=$(build_number) \
 		--build-arg BUILD_DATE_TS=$(build_date) \
 		--tag $(target_container_path):$(build_tag) \
-		--tag $(target_container_path):latest .
+		--tag $(target_container_path):latest \
+		-f walletapi.dockerfile .
 
 	docker push $(target_container_path):$(build_tag)
 	docker push $(target_container_path):latest
 
-	helm --kube-context $(context) upgrade \
-		--install bc-wallet-$(NETWORK_NAME)-hdwallet \
+	helm --kube-context $(context) dependency update ./deploy/helm/hdwallet
+
+	helm --kube-context $(context) template --debug \
 		--set "global.migrator.image.path=$(migrator_container_path)" \
 		--set "global.migrator.image.tag=latest" \
 		--set "global.api.image.path=$(target_container_path)" \
@@ -100,6 +172,22 @@ deploy:
 		--set "common.nameOverride=bc-wallet-$(NETWORK_NAME)-hdwallet" \
 		--values=./deploy/helm/hdwallet/values.yaml \
 		--values=./deploy/helm/hdwallet/values_$(env).yaml \
-		./deploy/helm/hdwallet
+		./deploy/helm/hdwallet > deployment.yaml
 
-.PHONY: hdwallet_proto deploy
+#	helm --kube-context $(context) upgrade \
+#		--install bc-wallet-$(NETWORK_NAME)-hdwallet \
+#		--set "global.migrator.image.path=$(migrator_container_path)" \
+#		--set "global.migrator.image.tag=latest" \
+#		--set "global.api.image.path=$(target_container_path)" \
+#		--set "global.api.image.tag=$(build_tag)" \
+#		--set "global.controller.image.path=$(controller_container_path)" \
+#		--set "global.controller.image.tag=latest" \
+#		--set "global.plugin.chain_id=$(coinType)" \
+#		--set "global.env=$(env)" \
+#		--set "common.network._default=$(NETWORK_NAME)" \
+#		--set "common.nameOverride=bc-wallet-$(NETWORK_NAME)-hdwallet" \
+#		--values=./deploy/helm/hdwallet/values.yaml \
+#		--values=./deploy/helm/hdwallet/values_$(env).yaml \
+#		./deploy/helm/hdwallet
+
+.PHONY: trrfrm hdwallet_proto deploy

@@ -1,5 +1,17 @@
 # Change Log
 
+## [v0.0.34] 06.05.2025
+### Added
+* Added support of chain id parameters for support multiple EVM-like networks
+* Added partially support of trrfrm usage, disabled by default - work in progress.
+  * Trrfrm usage is about run terraform JOB on helm hooks - pre-install,pre-upgrade
+### Changed
+* Updated year to 2025 in copyright banners
+* Updated year to 2025 in LICENCE file
+* Updated btcsuite/btcd version for fix vulnerabilities
+* Updated ethereum/go-ethereum version for fix vulnerabilities
+* Bump go version to 1.23
+
 ## [v0.0.33] 13.06.2024
 ### Added
 * Added support of dynamic CoinType and ChainId values. Now you can build HdWallet plugin version for any EVM-like network

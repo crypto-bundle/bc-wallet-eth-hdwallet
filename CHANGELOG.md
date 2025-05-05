@@ -5,6 +5,7 @@
 * Added support of chain id parameters for support multiple EVM-like networks
 * Added partially support of trrfrm usage, disabled by default - work in progress.
   * Trrfrm usage is about run terraform JOB on helm hooks - pre-install,pre-upgrade
+  * Makefile targets temporary moved to Makefile.keep 
 ### Changed
 * Updated year to 2025 in copyright banners
 * Updated year to 2025 in LICENCE file

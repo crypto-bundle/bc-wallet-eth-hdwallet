@@ -75,23 +75,7 @@ deploy:
 
 	helm --kube-context $(context) dependency update ./deploy/helm/hdwallet
 
-	helm --kube-context $(context) template --debug \
-		--set "global.migrator.image.path=$(migrator_container_path)" \
-		--set "global.migrator.image.tag=latest" \
-		--set "global.api.image.path=$(target_container_path)" \
-		--set "global.api.image.tag=$(build_tag)" \
-		--set "global.controller.image.path=$(controller_container_path)" \
-		--set "global.controller.image.tag=latest" \
-		--set "global.plugin.chain_id=$(coinType)" \
-		--set "global.env=$(env)" \
-		--set "common.network._default=$(NETWORK_NAME)" \
-		--set "common.nameOverride=bc-wallet-$(NETWORK_NAME)-hdwallet" \
-		--values=./deploy/helm/hdwallet/values.yaml \
-		--values=./deploy/helm/hdwallet/values_$(env).yaml \
-		./deploy/helm/hdwallet > deployment.yaml
-
-#	helm --kube-context $(context) upgrade \
-#		--install bc-wallet-$(NETWORK_NAME)-hdwallet \
+#	helm --kube-context $(context) template --debug \
 #		--set "global.migrator.image.path=$(migrator_container_path)" \
 #		--set "global.migrator.image.tag=latest" \
 #		--set "global.api.image.path=$(target_container_path)" \
@@ -104,6 +88,22 @@ deploy:
 #		--set "common.nameOverride=bc-wallet-$(NETWORK_NAME)-hdwallet" \
 #		--values=./deploy/helm/hdwallet/values.yaml \
 #		--values=./deploy/helm/hdwallet/values_$(env).yaml \
-#		./deploy/helm/hdwallet
+#		./deploy/helm/hdwallet > deployment.yaml
+
+	helm --kube-context $(context) upgrade \
+		--install bc-wallet-$(NETWORK_NAME)-hdwallet \
+		--set "global.migrator.image.path=$(migrator_container_path)" \
+		--set "global.migrator.image.tag=latest" \
+		--set "global.api.image.path=$(target_container_path)" \
+		--set "global.api.image.tag=$(build_tag)" \
+		--set "global.controller.image.path=$(controller_container_path)" \
+		--set "global.controller.image.tag=latest" \
+		--set "global.plugin.chain_id=$(coinType)" \
+		--set "global.env=$(env)" \
+		--set "common.network._default=$(NETWORK_NAME)" \
+		--set "common.nameOverride=bc-wallet-$(NETWORK_NAME)-hdwallet" \
+		--values=./deploy/helm/hdwallet/values.yaml \
+		--values=./deploy/helm/hdwallet/values_$(env).yaml \
+		./deploy/helm/hdwallet
 
 PHONY: test_plugin
